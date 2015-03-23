@@ -1,0 +1,12 @@
+Version 1.0.3
+* Bugfixes
+
+Version 1.0.2
+* Bugfixes
+
+Version 1.0.1
+* Add Pending Payment state
+* Small bugfixes
+
+Version 1.0.0
+* Init release

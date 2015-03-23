@@ -1,0 +1,8 @@
+Version 1.0.2
+* Bugfixes
+
+Version 1.0.1
+* Bugfixes
+
+Version 1.0.0
+* Init release
