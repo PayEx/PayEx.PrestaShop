@@ -43,6 +43,7 @@ class PayexConfirmModuleFrontController extends ModuleFrontController
         $currency = Currency::getCurrency($cart->id_currency);
         $lang = Language::getLanguage($cart->id_lang);
 
+        $this->context->customer->email = null; // Prevent mail sending
         $this->module->validateOrder((int)$this->context->cart->id, Configuration::get('PS_OS_PAYEX_OPEN'), 0, $this->module->displayName, null, array(), null, true, $customer->secure_key);
         $order = new Order($this->module->currentOrder);
         $amount = $cart->getOrderTotal(true, Cart::BOTH);
@@ -86,151 +87,153 @@ class PayexConfirmModuleFrontController extends ModuleFrontController
         $orderRef = $result['orderRef'];
         $redirectUrl = $result['redirectUrl'];
 
-        // add Order Lines
-        $i = 1;
-        foreach ($cart->getProducts() as $product) {
-            // Call PxOrder.AddSingleOrderLine2
+        if ($this->module->checkout_info) {
+            // add Order Lines
+            $i = 1;
+            foreach ($cart->getProducts() as $product) {
+                // Call PxOrder.AddSingleOrderLine2
+                $params = array(
+                    'accountNumber' => '',
+                    'orderRef' => $orderRef,
+                    'itemNumber' => $i,
+                    'itemDescription1' => $product['name'],
+                    'itemDescription2' => $product['name'] . ' ' . $product['attributes_small'],
+                    'itemDescription3' => '',
+                    'itemDescription4' => '',
+                    'itemDescription5' => '',
+                    'quantity' => $product['quantity'],
+                    'amount' => round(100 * $product['total_wt']), //must include tax
+                    'vatPrice' => round(100 * round($product['total_wt'] - $product['total'], 2)),
+                    'vatPercent' => round(100 * $product['rate'])
+                );
+                $result = $this->module->getPx()->AddSingleOrderLine2($params);
+                if ($result['code'] !== 'OK' || $result['description'] !== 'OK' || $result['errorCode'] !== 'OK') {
+                    $order->setCurrentState(Configuration::get('PS_OS_ERROR'));
+                    die(Tools::displayError($this->module->getVerboseErrorMessage($result)));
+                }
+
+                $i++;
+            };
+
+            // Add Shipping Line
+            if ((float)$order->total_shipping_tax_incl > 0) {
+                $carrier = new Carrier((int)$order->id_carrier);
+
+                $params = array(
+                    'accountNumber' => '',
+                    'orderRef' => $orderRef,
+                    'itemNumber' => $i,
+                    'itemDescription1' => $carrier->name,
+                    'itemDescription2' => '',
+                    'itemDescription3' => '',
+                    'itemDescription4' => '',
+                    'itemDescription5' => '',
+                    'quantity' => 1,
+                    'amount' => round(100 * $order->total_shipping_tax_incl), //must include tax
+                    'vatPrice' => round(100 * round($order->total_shipping_tax_incl - $order->total_shipping_tax_excl, 2)),
+                    'vatPercent' => round(100 * $order->carrier_tax_rate)
+                );
+                $result = $this->module->getPx()->AddSingleOrderLine2($params);
+                if ($result['code'] !== 'OK' || $result['description'] !== 'OK' || $result['errorCode'] !== 'OK') {
+                    $order->setCurrentState(Configuration::get('PS_OS_ERROR'));
+                    die(Tools::displayError($this->module->getVerboseErrorMessage($result)));
+                }
+
+                $i++;
+            }
+
+            // Add Discounts Line
+            if ((float)$order->total_discounts > 0) {
+                $taxPrice = round($order->total_discounts_tax_incl - $order->total_discounts_tax_excl, 2);
+                $taxPercent = ($taxPrice > 0) ? round(100 / ($order->total_discounts_tax_excl / $taxPrice)) : 0;
+
+                $params = array(
+                    'accountNumber' => '',
+                    'orderRef' => $orderRef,
+                    'itemNumber' => $i,
+                    'itemDescription1' => $this->module->l('Discount'),
+                    'itemDescription2' => '',
+                    'itemDescription3' => '',
+                    'itemDescription4' => '',
+                    'itemDescription5' => '',
+                    'quantity' => 1,
+                    'amount' => round(-100 * $order->total_discounts_tax_incl), //must include tax
+                    'vatPrice' => round(100 * $taxPrice),
+                    'vatPercent' => round(100 * $taxPercent)
+                );
+                $result = $this->module->getPx()->AddSingleOrderLine2($params);
+                if ($result['code'] !== 'OK' || $result['description'] !== 'OK' || $result['errorCode'] !== 'OK') {
+                    $order->setCurrentState(Configuration::get('PS_OS_ERROR'));
+                    die(Tools::displayError($this->module->getVerboseErrorMessage($result)));
+                }
+
+                $i++;
+            }
+
+            // Add Order Address
+            $billing_address = new Address((int)$cart->id_address_invoice);
+
+            // Call PxOrder.AddOrderAddress2
             $params = array(
                 'accountNumber' => '',
                 'orderRef' => $orderRef,
-                'itemNumber' => $i,
-                'itemDescription1' => $product['name'],
-                'itemDescription2' => $product['name'] . ' ' . $product['attributes_small'],
-                'itemDescription3' => '',
-                'itemDescription4' => '',
-                'itemDescription5' => '',
-                'quantity' => $product['quantity'],
-                'amount' => round(100 * $product['total_wt']), //must include tax
-                'vatPrice' => round(100 * round($product['total_wt'] - $product['total'], 2)),
-                'vatPercent' => round(100 * $product['rate'])
+                'billingFirstName' => $billing_address->firstname,
+                'billingLastName' => $billing_address->lastname,
+                'billingAddress1' => $billing_address->address1,
+                'billingAddress2' => $billing_address->address2,
+                'billingAddress3' => '',
+                'billingPostNumber' => $billing_address->postcode,
+                'billingCity' => $billing_address->city,
+                'billingState' => (string) State::getNameById($billing_address->id_state),
+                'billingCountry' => $billing_address->country,
+                'billingCountryCode' => (string) Country::getIsoById($billing_address->id_country),
+                'billingEmail' => $customer->email,
+                'billingPhone' => $billing_address->phone_mobile,
+                'billingGsm' => '',
             );
-            $result = $this->module->getPx()->AddSingleOrderLine2($params);
-            if ($result['code'] !== 'OK' || $result['description'] !== 'OK' || $result['errorCode'] !== 'OK') {
-                $order->setCurrentState(Configuration::get('PS_OS_ERROR'));
-                die(Tools::displayError($this->module->getVerboseErrorMessage($result)));
-            }
 
-            $i++;
-        };
-
-        // Add Shipping Line
-        if ((float)$order->total_shipping_tax_incl > 0) {
-            $carrier = new Carrier((int)$order->id_carrier);
-
-            $params = array(
-                'accountNumber' => '',
-                'orderRef' => $orderRef,
-                'itemNumber' => $i,
-                'itemDescription1' => $carrier->name,
-                'itemDescription2' => '',
-                'itemDescription3' => '',
-                'itemDescription4' => '',
-                'itemDescription5' => '',
-                'quantity' => 1,
-                'amount' => round(100 * $order->total_shipping_tax_incl), //must include tax
-                'vatPrice' => round(100 * round($order->total_shipping_tax_incl - $order->total_shipping_tax_excl, 2)),
-                'vatPercent' => round(100 * $order->carrier_tax_rate)
-            );
-            $result = $this->module->getPx()->AddSingleOrderLine2($params);
-            if ($result['code'] !== 'OK' || $result['description'] !== 'OK' || $result['errorCode'] !== 'OK') {
-                $order->setCurrentState(Configuration::get('PS_OS_ERROR'));
-                die(Tools::displayError($this->module->getVerboseErrorMessage($result)));
-            }
-
-            $i++;
-        }
-
-        // Add Discounts Line
-        if ((float)$order->total_discounts > 0) {
-            $taxPrice = round($order->total_discounts_tax_incl - $order->total_discounts_tax_excl, 2);
-            $taxPercent = ($taxPrice > 0) ? round(100 / ($order->total_discounts_tax_excl / $taxPrice)) : 0;
-
-            $params = array(
-                'accountNumber' => '',
-                'orderRef' => $orderRef,
-                'itemNumber' => $i,
-                'itemDescription1' => $this->module->l('Discount'),
-                'itemDescription2' => '',
-                'itemDescription3' => '',
-                'itemDescription4' => '',
-                'itemDescription5' => '',
-                'quantity' => 1,
-                'amount' => round(-100 * $order->total_discounts_tax_incl), //must include tax
-                'vatPrice' => round(100 * $taxPrice),
-                'vatPercent' => round(100 * $taxPercent)
-            );
-            $result = $this->module->getPx()->AddSingleOrderLine2($params);
-            if ($result['code'] !== 'OK' || $result['description'] !== 'OK' || $result['errorCode'] !== 'OK') {
-                $order->setCurrentState(Configuration::get('PS_OS_ERROR'));
-                die(Tools::displayError($this->module->getVerboseErrorMessage($result)));
-            }
-
-            $i++;
-        }
-
-        // Add Order Address
-        $billing_address = new Address((int)$cart->id_address_invoice);
-
-        // Call PxOrder.AddOrderAddress2
-        $params = array(
-            'accountNumber' => '',
-            'orderRef' => $orderRef,
-            'billingFirstName' => $billing_address->firstname,
-            'billingLastName' => $billing_address->lastname,
-            'billingAddress1' => $billing_address->address1,
-            'billingAddress2' => $billing_address->address2,
-            'billingAddress3' => '',
-            'billingPostNumber' => $billing_address->postcode,
-            'billingCity' => $billing_address->city,
-            'billingState' => (string) State::getNameById($billing_address->id_state),
-            'billingCountry' => $billing_address->country,
-            'billingCountryCode' => (string) Country::getIsoById($billing_address->id_country),
-            'billingEmail' => $customer->email,
-            'billingPhone' => $billing_address->phone_mobile,
-            'billingGsm' => '',
-        );
-
-        $shipping_params = array(
-            'deliveryFirstName' => '',
-            'deliveryLastName' => '',
-            'deliveryAddress1' => '',
-            'deliveryAddress2' => '',
-            'deliveryAddress3' => '',
-            'deliveryPostNumber' => '',
-            'deliveryCity' => '',
-            'deliveryState' => '',
-            'deliveryCountry' => '',
-            'deliveryCountryCode' => '',
-            'deliveryEmail' => '',
-            'deliveryPhone' => '',
-            'deliveryGsm' => '',
-        );
-
-        if (!$order->isVirtual()) {
-            $shipping_address = new Address((int) $cart->id_address_delivery);
             $shipping_params = array(
-                'deliveryFirstName' => $shipping_address->firstname,
-                'deliveryLastName' => $shipping_address->lastname,
-                'deliveryAddress1' => $shipping_address->address1,
-                'deliveryAddress2' => $shipping_address->address2,
+                'deliveryFirstName' => '',
+                'deliveryLastName' => '',
+                'deliveryAddress1' => '',
+                'deliveryAddress2' => '',
                 'deliveryAddress3' => '',
-                'deliveryPostNumber' => $shipping_address->postcode,
-                'deliveryCity' => $shipping_address->city,
-                'deliveryState' => (string) State::getNameById($shipping_address->id_state),
-                'deliveryCountry' => $shipping_address->country,
-                'deliveryCountryCode' => (string) Country::getIsoById($shipping_address->id_country),
-                'deliveryEmail' => $customer->email,
-                'deliveryPhone' => $shipping_address->phone_mobile,
+                'deliveryPostNumber' => '',
+                'deliveryCity' => '',
+                'deliveryState' => '',
+                'deliveryCountry' => '',
+                'deliveryCountryCode' => '',
+                'deliveryEmail' => '',
+                'deliveryPhone' => '',
                 'deliveryGsm' => '',
             );
-        }
 
-        $params += $shipping_params;
+            if (!$order->isVirtual()) {
+                $shipping_address = new Address((int) $cart->id_address_delivery);
+                $shipping_params = array(
+                    'deliveryFirstName' => $shipping_address->firstname,
+                    'deliveryLastName' => $shipping_address->lastname,
+                    'deliveryAddress1' => $shipping_address->address1,
+                    'deliveryAddress2' => $shipping_address->address2,
+                    'deliveryAddress3' => '',
+                    'deliveryPostNumber' => $shipping_address->postcode,
+                    'deliveryCity' => $shipping_address->city,
+                    'deliveryState' => (string) State::getNameById($shipping_address->id_state),
+                    'deliveryCountry' => $shipping_address->country,
+                    'deliveryCountryCode' => (string) Country::getIsoById($shipping_address->id_country),
+                    'deliveryEmail' => $customer->email,
+                    'deliveryPhone' => $shipping_address->phone_mobile,
+                    'deliveryGsm' => '',
+                );
+            }
 
-        $result = $this->module->getPx()->AddOrderAddress2($params);
-        if ($result['code'] !== 'OK' || $result['description'] !== 'OK' || $result['errorCode'] !== 'OK') {
-            $order->setCurrentState(Configuration::get('PS_OS_ERROR'));
-            die(Tools::displayError($this->module->getVerboseErrorMessage($result)));
+            $params += $shipping_params;
+
+            $result = $this->module->getPx()->AddOrderAddress2($params);
+            if ($result['code'] !== 'OK' || $result['description'] !== 'OK' || $result['errorCode'] !== 'OK') {
+                $order->setCurrentState(Configuration::get('PS_OS_ERROR'));
+                die(Tools::displayError($this->module->getVerboseErrorMessage($result)));
+            }
         }
 
         // Redirect to PayEx

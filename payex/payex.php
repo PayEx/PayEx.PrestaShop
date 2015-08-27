@@ -23,6 +23,7 @@ class Payex extends PaymentModule
     public $transactiontype;
     public $paymentview;
     public $responsive;
+    public $checkout_info;
 
     /**
      * Init
@@ -31,20 +32,21 @@ class Payex extends PaymentModule
     {
         $this->name = 'payex';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0';
+        $this->version = '1.0.4';
         $this->author = 'AAIT';
 
         $this->currencies = true; // binding this method of payment to a specific currency
         $this->currencies_mode = 'checkbox';
 
         // Init Configuration
-        $config = Configuration::getMultiple(array('PX_ACCOUNT_NUMBER', 'PX_ENCRYPTION_KEY', 'PX_TESTMODE', 'PX_TRANSACTION_TYPE', 'PX_PAYMENT_VIEW', 'PX_RESPONSIVE'));
+        $config = Configuration::getMultiple(array('PX_ACCOUNT_NUMBER', 'PX_ENCRYPTION_KEY', 'PX_TESTMODE', 'PX_TRANSACTION_TYPE', 'PX_PAYMENT_VIEW', 'PX_RESPONSIVE', 'PX_CHECKOUT_INFO'));
         $this->accountnumber = isset($config['PX_ACCOUNT_NUMBER']) ? $config['PX_ACCOUNT_NUMBER'] : '';
         $this->encryptionkey = isset($config['PX_ENCRYPTION_KEY']) ? $config['PX_ENCRYPTION_KEY'] : '';
         $this->mode = isset($config['PX_TESTMODE']) ? $config['PX_TESTMODE'] : 1;
         $this->transactiontype = isset($config['PX_TRANSACTION_TYPE']) ? $config['PX_TRANSACTION_TYPE'] : 'AUTHORIZATION';
         $this->paymentview = isset($config['PX_PAYMENT_VIEW']) ? $config['PX_PAYMENT_VIEW'] : 'PX';
         $this->responsive = isset($config['PX_RESPONSIVE']) ? (bool)$config['PX_RESPONSIVE'] : false;
+        $this->checkout_info = isset($config['PX_CHECKOUT_INFO']) ? (bool)$config['PX_CHECKOUT_INFO'] : false;;
 
         // Init PayEx
         $this->getPx()->setEnvironment($this->accountnumber, $this->encryptionkey, (bool)$this->mode);
@@ -113,6 +115,7 @@ class Payex extends PaymentModule
         Configuration::updateValue('PX_TRANSACTION_TYPE', 'AUTHORIZATION');
         Configuration::updateValue('PX_PAYMENT_VIEW', 'PX');
         Configuration::updateValue('PX_RESPONSIVE', false);
+        Configuration::updateValue('PX_CHECKOUT_INFO', true);
         return true;
     }
 
@@ -136,6 +139,7 @@ class Payex extends PaymentModule
         Configuration::deleteByName('PX_TRANSACTION_TYPE');
         Configuration::deleteByName('PX_PAYMENT_VIEW');
         Configuration::deleteByName('PX_RESPONSIVE');
+        Configuration::deleteByName('PX_CHECKOUT_INFO');
 
         return true;
     }
@@ -162,6 +166,7 @@ class Payex extends PaymentModule
             Configuration::updateValue('PX_TRANSACTION_TYPE', Tools::getValue('transactiontype'));
             Configuration::updateValue('PX_PAYMENT_VIEW', Tools::getValue('paymentview'));
             Configuration::updateValue('PX_RESPONSIVE', (bool)Tools::getValue('responsive'));
+            Configuration::updateValue('PX_CHECKOUT_INFO', (bool)Tools::getValue('checkout_info'));
         }
         $this->_html .= '<div class="conf confirm"> ' . $this->l('Settings updated') . '</div>';
     }
@@ -225,8 +230,17 @@ class Payex extends PaymentModule
 						<td width="130" style="vertical-align: top;">' . $this->l('Responsive Skinning') . '</td>
 						<td>
 							<select name="responsive">
-                                <option ' . (Tools::getValue('responsive', $this->responsive) === '1' ? 'selected="selected"' : '') . 'value="1">Enabled</option>
-                                <option ' . (Tools::getValue('responsive', $this->responsive) === '0' ? 'selected="selected"' : '') . 'value="0">Disabled</option>
+                                <option ' . ((bool) Tools::getValue('responsive', $this->responsive) === true ? 'selected="selected"' : '') . 'value="1">Enabled</option>
+                                <option ' . ((bool) Tools::getValue('responsive', $this->responsive) === false ? 'selected="selected"' : '') . 'value="0">Disabled</option>
+                            </select>
+						</td>
+					</tr>
+					<tr>
+						<td width="130" style="vertical-align: top;">' . $this->l('Send order lines and billing/delivery addresses to PayEx') . '</td>
+						<td>
+							<select name="checkout_info">
+                                <option ' . ((bool) Tools::getValue('checkout_info', $this->checkout_info) === true ? 'selected="selected"' : '') . 'value="1">Enabled</option>
+                                <option ' . ((bool) Tools::getValue('checkout_info', $this->checkout_info) === false ? 'selected="selected"' : '') . 'value="0">Disabled</option>
                             </select>
 						</td>
 					</tr>
