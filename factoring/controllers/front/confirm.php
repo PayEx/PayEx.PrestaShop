@@ -126,27 +126,72 @@ class FactoringConfirmModuleFrontController extends ModuleFrontController
 
         $orderRef = $result['orderRef'];
 
-        // Call PxOrder.PurchaseInvoiceSale / PxOrder.PurchasePartPaymentSale
-        $params = array(
-            'accountNumber' => '',
-            'orderRef' => $orderRef,
-            'socialSecurityNumber' => $ssn,
-            'legalFirstName' => $billing_address->firstname,
-            'legalLastName' => $billing_address->lastname,
-            'legalStreetAddress' => $billing_address->address1 . ' ' . $billing_address->address2,
-            'legalCoAddress' => '',
-            'legalPostNumber' => str_replace(' ', '', $billing_address->postcode),
-            'legalCity' => $shipping_address->city,
-            'legalCountryCode' => (string) Country::getIsoById($billing_address->id_country),
-            'email' => $customer->email,
-            'msisdn' => (substr($shipping_address->phone_mobile, 0, 1) === '+') ? $shipping_address->phone_mobile : '+' . $shipping_address->phone_mobile,
-            'ipAddress' => Tools::getRemoteAddr(),
-        );
+        // Perform Payment
+        switch ($this->module->type) {
+            case 'FINANCING':
+                // Call PxOrder.PurchaseFinancingInvoice
+                $params = array(
+                    'accountNumber' => '',
+                    'orderRef' => $orderRef,
+                    'socialSecurityNumber' => $ssn,
+                    'legalName' => $billing_address->firstname . ' ' . $billing_address->lastname,
+                    'streetAddress' => trim( $billing_address->address1 . ' ' . $billing_address->address2 ),
+                    'coAddress' => '',
+                    'zipCode' => str_replace(' ', '', $billing_address->postcode),
+                    'city' => $shipping_address->city,
+                    'countryCode' => (string) Country::getIsoById($billing_address->id_country),
+                    'paymentMethod' => (string) Country::getIsoById($billing_address->id_country) === 'SE' ? 'PXFINANCINGINVOICESE' : 'PXFINANCINGINVOICENO',
+                    'email' => $customer->email,
+                    'msisdn' => (substr($shipping_address->phone_mobile, 0, 1) === '+') ? $shipping_address->phone_mobile : '+' . $shipping_address->phone_mobile,
+                    'ipAddress' => Tools::getRemoteAddr()
+                );
 
-        if ($this->module->type === 'FACTORING') {
-            $result = $this->module->getPx()->PurchaseInvoiceSale($params);
-        } else {
-            $result = $this->module->getPx()->PurchasePartPaymentSale($params);
+                $result = $this->module->getPx()->PurchaseFinancingInvoice($params);
+                break;
+            case 'FACTORING':
+                // Call PxOrder.PurchaseInvoiceSale
+                $params = array(
+                    'accountNumber' => '',
+                    'orderRef' => $orderRef,
+                    'socialSecurityNumber' => $ssn,
+                    'legalFirstName' => $billing_address->firstname,
+                    'legalLastName' => $billing_address->lastname,
+                    'legalStreetAddress' => $billing_address->address1 . ' ' . $billing_address->address2,
+                    'legalCoAddress' => '',
+                    'legalPostNumber' => str_replace(' ', '', $billing_address->postcode),
+                    'legalCity' => $shipping_address->city,
+                    'legalCountryCode' => (string) Country::getIsoById($billing_address->id_country),
+                    'email' => $customer->email,
+                    'msisdn' => (substr($shipping_address->phone_mobile, 0, 1) === '+') ? $shipping_address->phone_mobile : '+' . $shipping_address->phone_mobile,
+                    'ipAddress' => Tools::getRemoteAddr(),
+                );
+
+                $result = $this->module->getPx()->PurchaseInvoiceSale($params);
+                break;
+            case 'CREDITACCOUNT':
+                // Call PxOrder.PurchasePartPaymentSale
+                $params = array(
+                    'accountNumber' => '',
+                    'orderRef' => $orderRef,
+                    'socialSecurityNumber' => $ssn,
+                    'legalFirstName' => $billing_address->firstname,
+                    'legalLastName' => $billing_address->lastname,
+                    'legalStreetAddress' => $billing_address->address1 . ' ' . $billing_address->address2,
+                    'legalCoAddress' => '',
+                    'legalPostNumber' => str_replace(' ', '', $billing_address->postcode),
+                    'legalCity' => $shipping_address->city,
+                    'legalCountryCode' => (string) Country::getIsoById($billing_address->id_country),
+                    'email' => $customer->email,
+                    'msisdn' => (substr($shipping_address->phone_mobile, 0, 1) === '+') ? $shipping_address->phone_mobile : '+' . $shipping_address->phone_mobile,
+                    'ipAddress' => Tools::getRemoteAddr(),
+                );
+
+                $result = $this->module->getPx()->PurchasePartPaymentSale($params);
+                break;
+            default:
+                $order->setCurrentState(Configuration::get('PS_OS_ERROR'));
+                die(Tools::displayError($this->module->l('Invalid payment mode')));
+                break;
         }
 
         if ($result['code'] !== 'OK' || $result['description'] !== 'OK' || $result['errorCode'] !== 'OK') {

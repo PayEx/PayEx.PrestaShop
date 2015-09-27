@@ -28,7 +28,7 @@ class Factoring extends PaymentModule
     {
         $this->name = 'factoring';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.1';
+        $this->version = '1.0.3';
         $this->author = 'AAIT';
 
         $this->currencies = true; // binding this method of payment to a specific currency
@@ -42,7 +42,7 @@ class Factoring extends PaymentModule
         $this->factoring_fee_product_id = isset($config['PX_FC_FEE_PRODUCT_ID']) ? $config['PX_FC_FEE_PRODUCT_ID'] : false;
         $this->factoring_fee_price = isset($config['PX_FC_FEE_PRICE']) ? $config['PX_FC_FEE_PRICE'] : 0;
         $this->factoring_fee_tax_rule = isset($config['PX_FC_FEE_TAX_RULE']) ? $config['PX_FC_FEE_TAX_RULE'] : 0;
-        $this->type = isset($config['PX_FC_TYPE']) ? $config['PX_FC_TYPE'] : 'FACTORING';
+        $this->type = isset($config['PX_FC_TYPE']) ? $config['PX_FC_TYPE'] : 'FINANCING';
 
         // Init PayEx
         $this->getPx()->setEnvironment($this->accountnumber, $this->encryptionkey, (bool)$this->mode);
@@ -112,7 +112,7 @@ class Factoring extends PaymentModule
         Configuration::updateValue('PX_FC_FEE_PRODUCT_ID', false);
         Configuration::updateValue('PX_FC_FEE_PRICE', 0);
         Configuration::updateValue('PX_FC_FEE_TAX_RULE', 0);
-        Configuration::updateValue('PX_FC_TYPE', 'FACTORING');
+        Configuration::updateValue('PX_FC_TYPE', 'FINANCING');
         return true;
     }
 
@@ -252,6 +252,7 @@ class Factoring extends PaymentModule
 						<td>
 							<select name="type">
                                 <option ' . (Tools::getValue('type', $this->type) == 'SELECT' ? 'selected="selected"' : '') . 'value="SELECT">User select</option>
+                                <option ' . (Tools::getValue('type', $this->type) == 'FINANCING' ? 'selected="selected"' : '') . 'value="FINANCING">Financing Invoice</option>
                                 <option ' . (Tools::getValue('type', $this->type) == 'FACTORING' ? 'selected="selected"' : '') . 'value="FACTORING">Invoice 2.0 (Factoring)</option>
                                 <option ' . (Tools::getValue('type', $this->type) == 'CREDITACCOUNT' ? 'selected="selected"' : '') . 'value="CREDITACCOUNT">Part Payment</option>
                             </select>
@@ -562,7 +563,7 @@ class Factoring extends PaymentModule
                 'amount' => round(100 * $order_fields['total_paid']),
                 'orderId' => $order_fields['reference'],
                 'vatAmount' => round(100 * ($order_fields['total_paid_tax_incl'] - $order_fields['total_paid_tax_excl'])),
-                'additionalValues' => 'INVOICESALE_ORDERLINES=' . urlencode($this->getInvoiceExtraPrintBlocksXML($order))
+                'additionalValues' => 'FINANCINGINVOICE_ORDERLINES=' . urlencode($this->getInvoiceExtraPrintBlocksXML($order))
             );
             $result = $this->getPx()->Capture5($params);
             if ($result['code'] !== 'OK' || $result['description'] !== 'OK' || $result['errorCode'] !== 'OK') {
@@ -954,7 +955,7 @@ class Factoring extends PaymentModule
     {
         $errorMessages = array(
             'REJECTED_BY_ACQUIRER' => $this->l('Your customers bank declined the transaction, your customer can contact their bank for more information'),
-            'Error_Generic' => $this->l('An unhandled exception occurred'),
+            //'Error_Generic' => $this->l('An unhandled exception occurred'),
             '3DSecureDirectoryServerError' => $this->l('A problem with Visa or MasterCards directory server, that communicates transactions for 3D-Secure verification'),
             'AcquirerComunicationError' => $this->l('Communication error with the acquiring bank'),
             'AmountNotEqualOrderLinesTotal' => $this->l('The sum of your order lines is not equal to the price set in initialize'),

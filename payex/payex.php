@@ -32,7 +32,7 @@ class Payex extends PaymentModule
     {
         $this->name = 'payex';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.4';
+        $this->version = '1.0.5';
         $this->author = 'AAIT';
 
         $this->currencies = true; // binding this method of payment to a specific currency
@@ -393,16 +393,16 @@ class Payex extends PaymentModule
 
     /**
      * Get PayEx handler
-     * @return Px_Px
+     * @return Px
      */
     public function getPx()
     {
         if (!$this->_px) {
-            if (!class_exists('Px_Px')) {
+            if (!class_exists('Px')) {
                 require_once dirname(__FILE__) . '/library/Px/Px.php';
             }
 
-            $this->_px = new Px_Px();
+            $this->_px = new Px();
         }
 
         return $this->_px;
@@ -896,7 +896,7 @@ class Payex extends PaymentModule
     {
         $errorMessages = array(
             'REJECTED_BY_ACQUIRER' => $this->l('Your customers bank declined the transaction, your customer can contact their bank for more information'),
-            'Error_Generic' => $this->l('An unhandled exception occurred'),
+            //'Error_Generic' => $this->l('An unhandled exception occurred'),
             '3DSecureDirectoryServerError' => $this->l('A problem with Visa or MasterCards directory server, that communicates transactions for 3D-Secure verification'),
             'AcquirerComunicationError' => $this->l('Communication error with the acquiring bank'),
             'AmountNotEqualOrderLinesTotal' => $this->l('The sum of your order lines is not equal to the price set in initialize'),

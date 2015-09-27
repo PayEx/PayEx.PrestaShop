@@ -32,7 +32,8 @@
         <p>
             <label for="factoring-menu">{l s='Please select payment method:' mod='factoring'}</label>
             <select name="factoring-menu" id="factoring-menu" class="required-entry">
-                <option selected value="FACTORING">{l s='Invoice 2.0 (Factoring)' mod='factoring'}</option>
+                <option selected value="FINANCING">{l s='Financing Invoice' mod='factoring'}</option>
+                <option value="FACTORING">{l s='Invoice 2.0 (Factoring)' mod='factoring'}</option>
                 <option value="CREDITACCOUNT">{l s='Part Payment' mod='factoring'}</option>
             </select>
         </p>

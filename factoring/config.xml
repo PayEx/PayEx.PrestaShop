@@ -2,7 +2,7 @@
 <module>
 	<name>factoring</name>
 	<displayName><![CDATA[Payex Factoring]]></displayName>
-	<version><![CDATA[1.0.1]]></version>
+	<version><![CDATA[1.0.3]]></version>
 	<description><![CDATA[Accept payments for your products using Payex Factoring.]]></description>
 	<author><![CDATA[AAIT]]></author>
 	<tab><![CDATA[payments_gateways]]></tab>

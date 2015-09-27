@@ -1,3 +1,6 @@
+Version 1.0.5
+* Updated PayEx library
+
 Version 1.0.4
 * Added "Send order lines and billing/delivery addresses to PayEx" option
 
