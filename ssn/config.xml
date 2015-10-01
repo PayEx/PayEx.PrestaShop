@@ -2,7 +2,7 @@
 <module>
 	<name>ssn</name>
 	<displayName><![CDATA[Social Security Number]]></displayName>
-	<version><![CDATA[1]]></version>
+	<version><![CDATA[1.0.1]]></version>
 	<description><![CDATA[Get Address using Social Security Number.]]></description>
 	<author><![CDATA[AAIT]]></author>
 	<tab><![CDATA[billing_invoicing]]></tab>
