@@ -50,7 +50,7 @@ class Bankdebit extends PaymentModule
     {
         $this->name = 'bankdebit';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.3';
+        $this->version = '1.0.4';
         $this->author = 'AAIT';
 
         $this->currencies = true; // binding this method of payment to a specific currency

@@ -32,7 +32,7 @@ class Payex extends PaymentModule
     {
         $this->name = 'payex';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.5';
+        $this->version = '1.0.6';
         $this->author = 'AAIT';
 
         $this->currencies = true; // binding this method of payment to a specific currency

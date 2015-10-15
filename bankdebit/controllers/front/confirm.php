@@ -69,7 +69,7 @@ class BankdebitConfirmModuleFrontController extends ModuleFrontController
             'description' => $this->module->displayName,
             'clientIPAddress' => Tools::getRemoteAddr(),
             'clientIdentifier' => 'USERAGENT=' . $_SERVER['HTTP_USER_AGENT'],
-            'additionalValues' => $this->module->responsive ? 'USECSS=RESPONSIVEDESIGN' : '',
+            'additionalValues' => $this->module->responsive ? 'RESPONSIVE=1' : '',
             'externalID' => '',
             'returnUrl' => $returnUrl,
             'view' => $this->module->paymentview,

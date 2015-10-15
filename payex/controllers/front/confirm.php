@@ -51,7 +51,13 @@ class PayexConfirmModuleFrontController extends ModuleFrontController
         $additional = $this->module->paymentview == 'PX' ? 'PAYMENTMENU=TRUE' : '';
         if ($this->module->responsive) {
             $separator = (!empty($additional) && mb_substr($additional, -1) !== '&') ? '&' : '';
-            $additional .= $separator . 'USECSS=RESPONSIVEDESIGN';
+
+            // PayEx Payment Page 2.0  works only for View 'Credit Card' and 'Direct Debit' at the moment
+            if (in_array($this->module->paymentview, array('CREDITCARD', 'DIRECTDEBIT'))) {
+                $additional .= $separator . 'RESPONSIVE=1';
+            } else {
+                $additional .= $separator . 'USECSS=RESPONSIVEDESIGN';
+            }
         }
 
         $returnUrl = _PS_BASE_URL_ . __PS_BASE_URI__.'index.php?controller=order-confirmation?key='.$customer->secure_key.'&id_cart='.(int)$this->context->cart->id.'&id_module='.(int)$this->module->id.'&id_order='.(int)$this->module->currentOrder;
