@@ -21,14 +21,23 @@ class SsnAddressModuleFrontController extends ModuleFrontController
             die(Tools::jsonEncode($output));
         }
 
-        $ssn = preg_replace('/[^0-9]/s', '', $ssn);
+        //$ssn = preg_replace('/[^0-9]/s', '', $ssn);
 
         // Get Country Code
-        $country_code = $this->getCountryCodeBySSN($ssn);
-        if (!$country_code) {
+        //$country_code = $this->getCountryCodeBySSN($ssn);
+        //if (!$country_code) {
+        //    $output = array(
+        //        'success' => false,
+        //        'message' => $this->module->l('Invalid Social Security Number')
+        //    );
+        //    die(Tools::jsonEncode($output));
+        //}
+
+        $country_code = Tools::getValue('country_code');
+        if (empty($country_code)) {
             $output = array(
                 'success' => false,
-                'message' => $this->module->l('Invalid Social Security Number')
+                'message' => $this->module->l('Please enter country')
             );
             die(Tools::jsonEncode($output));
         }
@@ -41,12 +50,21 @@ class SsnAddressModuleFrontController extends ModuleFrontController
             die(Tools::jsonEncode($output));
         }
 
+        $postcode = Tools::getValue('postcode');
+        if (empty($postcode)) {
+            $output = array(
+                'success' => false,
+                'message' => $this->module->l('Please enter postcode')
+            );
+            die(Tools::jsonEncode($output));
+        }
+
         // Call PxOrder.GetAddressByPaymentMethod
         $params = array(
             'accountNumber' => '',
             'paymentMethod' => 'PXFINANCINGINVOICE' . $country_code,
             'ssn' => $ssn,
-            'zipcode' => '',
+            'zipcode' => $postcode,
             'countryCode' => $country_code,
             'ipAddress' => $_SERVER['REMOTE_ADDR']
         );

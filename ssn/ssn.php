@@ -21,7 +21,7 @@ class Ssn extends Module
     {
         $this->name = 'ssn';
         $this->tab = 'billing_invoicing';
-        $this->version = '1.0.1';
+        $this->version = '1.0.2';
         $this->author = 'AAIT';
         $this->need_instance = 0;
 

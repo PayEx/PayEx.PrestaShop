@@ -1,13 +1,29 @@
 $(document).ready(function () {
     // Attach field to form
     if ($('#add_address').length) {
-        var fields1 = '<div class="form-group text"><label for="social_security_number">Social Security Number</label><input class="form-control" type="text" name="social_security_number" id="social_security_number" placeholder="Social Security Number"><input type="button" name="getAddress" value="Get Address" class="button" style="width: 100px; margin-left: 10px;"></div>';
+        var fields1 = '<div class="form-group text">';
+        fields1 += '<label for="social_security_number">Social Security Number</label>';
+        fields1 += '<input class="form-control" type="text" name="social_security_number" id="social_security_number" placeholder="Social Security Number">';
+        fields1 += '<label for="check_postcode">Zip/Postal code</label>';
+        fields1 += '<input type="text" class="text form-control" name="check_postcode" id="check_postcode" />';
+        fields1 += '<label for="check_country">Country</label>';
+        fields1 += '<select name="check_country" id="check_country" class="form-control"><option value="SE" selected="selected">Sweden</option><option value="NO">Norway</option></select>';
+        fields1 += '<br/><input type="button" name="getAddress" value="Get Address" class="button"</div>';
+
         $(fields1).insertBefore(jQuery('#add_address input[name="firstname"]').closest('div'));
     }
 
     // One Page Checkout Mode
     if ($('#opc_account_form #email').length) {
-        var fields2 = '<div class="form-group text"><label for="social_security_number">Social Security Number</label><input class="form-control" type="text" name="social_security_number" id="social_security_number" placeholder="Social Security Number"><input type="button" name="getAddress-opc" value="Get Address" class="button"</div>';
+        var fields2 = '<div class="form-group text">';
+            fields2 += '<label for="social_security_number">Social Security Number</label>';
+            fields2 += '<input class="form-control" type="text" name="social_security_number" id="social_security_number" placeholder="Social Security Number">';
+            fields2 += '<label for="check_postcode">Zip/Postal code</label>';
+            fields2 += '<input type="text" class="text form-control" name="check_postcode" id="check_postcode" />';
+            fields2 += '<label for="check_country">Country</label>';
+            fields2 += '<select name="check_country" id="check_country" class="form-control"><option value="SE" selected="selected">Sweden</option><option value="NO">Norway</option></select>';
+            fields2 += '<br/><input type="button" name="getAddress-opc" value="Get Address" class="button"</div>';
+
         $(fields2).insertBefore(jQuery('#opc_account_form input[name="email"]').closest('div'));
     }
 
@@ -20,7 +36,9 @@ $(document).ready(function () {
             dataType: 'json',
             data: {
                 ajax: true,
-                ssn: $("input[name='social_security_number']").val()
+                ssn: $("input[name='social_security_number']").val(),
+                country_code: $("select[name='check_country']").val(),
+                postcode: $("input[name='check_postcode']").val()
             },
             success: function (response) {
                 if (!response.success) {
@@ -34,7 +52,7 @@ $(document).ready(function () {
                 jQuery('input[name="address2"]').val(response.address_2);
                 jQuery('input[name="postcode"]').val(response.postcode);
                 jQuery('input[name="city"]').val(response.city);
-                jQuery('input[name="id_country"]').val(response.country_id);
+                jQuery('select[name="id_country"]').val(response.country_id);
             }
         });
     });
@@ -48,7 +66,9 @@ $(document).ready(function () {
             dataType: 'json',
             data: {
                 ajax: true,
-                ssn: $("input[name='social_security_number']").val()
+                ssn: $("input[name='social_security_number']").val(),
+                country_code: $("select[name='check_country']").val(),
+                postcode: $("input[name='check_postcode']").val()
             },
             success: function (response) {
                 if (!response.success) {
@@ -63,7 +83,7 @@ $(document).ready(function () {
                 jQuery('#opc_account_form input[name="address1"]').val(response.address_1 + ' ' + response.address_2);
                 jQuery('#opc_account_form input[name="postcode"]').val(response.postcode);
                 jQuery('#opc_account_form input[name="city"]').val(response.city);
-                jQuery('#opc_account_form input[name="id_country"]').val(response.country_id);
+                jQuery('#opc_account_form select[name="id_country"]').val(response.country_id);
             }
         });
     });
