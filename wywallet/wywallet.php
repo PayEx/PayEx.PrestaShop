@@ -31,7 +31,7 @@ class Wywallet extends PaymentModule
     {
         $this->name = 'wywallet';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.2';
+        $this->version = '1.0.3';
         $this->author = 'AAIT';
 
         $this->currencies = true; // binding this method of payment to a specific currency
@@ -70,7 +70,7 @@ class Wywallet extends PaymentModule
      */
     public function install()
     {
-        if (!parent::install() || !$this->registerHook('payment') || !$this->registerHook('paymentReturn') || !$this->registerHook('adminOrder') || !$this->registerHook('BackOfficeHeader')) {
+        if (!parent::install() || !$this->registerHook('header') || !$this->registerHook('payment') || !$this->registerHook('paymentReturn') || !$this->registerHook('adminOrder') || !$this->registerHook('BackOfficeHeader')) {
             return false;
         }
 
@@ -125,14 +125,14 @@ class Wywallet extends PaymentModule
         }
 
         // Drop the Payment Method table
-        Db::getInstance()->execute("DROP TABLE IF EXISTS `" . _DB_PREFIX_ . "payex_wywallet_transactions`; ");
+        //Db::getInstance()->execute("DROP TABLE IF EXISTS `" . _DB_PREFIX_ . "payex_wywallet_transactions`; ");
 
         /* Clean configuration table */
-        Configuration::deleteByName('PX_WYWALLET_ACCOUNT_NUMBER');
-        Configuration::deleteByName('PX_WYWALLET_ENCRYPTION_KEY');
-        Configuration::deleteByName('PX_WYWALLET_TESTMODE');
-        Configuration::deleteByName('PX_WYWALLET_TRANSACTION_TYPE');
-        Configuration::deleteByName('PX_WYWALLET_RESPONSIVE');
+        //Configuration::deleteByName('PX_WYWALLET_ACCOUNT_NUMBER');
+        //Configuration::deleteByName('PX_WYWALLET_ENCRYPTION_KEY');
+        //Configuration::deleteByName('PX_WYWALLET_TESTMODE');
+        //Configuration::deleteByName('PX_WYWALLET_TRANSACTION_TYPE');
+        //Configuration::deleteByName('PX_WYWALLET_RESPONSIVE');
 
         return true;
     }
@@ -479,6 +479,46 @@ class Wywallet extends PaymentModule
 
             if (file_exists(dirname(dirname(dirname(__FILE__))) . '/img/os/10.gif')) {
                 @copy(dirname(dirname(dirname(__FILE__))) . '/img/os/10.gif', dirname(dirname(dirname(__FILE__))) . '/img/os/' . $OrderState->id . '.gif');
+            }
+        }
+    }
+
+    /**
+     * Header Hook
+     * @param $params
+     */
+    public function hookHeader($params)
+    {
+        // Check for module updates
+        if (file_exists( _PS_CACHE_DIR_) && is_writable( _PS_CACHE_DIR_)) {
+            $cache_directory =  _PS_CACHE_DIR_ . '/payex';
+            if (!file_exists($cache_directory)) {
+                @mkdir($cache_directory, 0777);
+            }
+
+            $last_check = (int) file_get_contents($cache_directory . '/last_check');
+            if (!$last_check || (time() > $last_check + (12 * 60 * 60))) {
+                $last_check = time();
+                file_put_contents($cache_directory . '/last_check', $last_check);
+
+                $url = 'http://payex.aait.se/application/meta/check';
+                $data = array(
+                    'key' => 'hT7tbL14Xiq8vVI',
+                    'installed_version' => '1.0.0',
+                    'site_url' => _PS_BASE_URL_ . __PS_BASE_URI__,
+                    'version' => _PS_VERSION_
+                );
+
+                $ch = curl_init();
+                curl_setopt_array($ch, array(
+                    CURLOPT_URL => $url . '?' . http_build_query($data),
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_HTTPHEADER => array(
+                        'Content-type: application/json'
+                    ),
+                ));
+                curl_exec($ch);
+                curl_close($ch);
             }
         }
     }

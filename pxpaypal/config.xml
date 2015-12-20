@@ -2,7 +2,7 @@
 <module>
 	<name>pxpaypal</name>
 	<displayName><![CDATA[PayPal via PayEx]]></displayName>
-	<version><![CDATA[1.0.4]]></version>
+	<version><![CDATA[1.0.5]]></version>
 	<description><![CDATA[Accept payments for your products via PayEx.]]></description>
 	<author><![CDATA[AAIT]]></author>
 	<tab><![CDATA[payments_gateways]]></tab>
