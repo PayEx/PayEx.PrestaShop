@@ -12,7 +12,7 @@ class SsnAddressModuleFrontController extends ModuleFrontController
      */
     public function postProcess()
     {
-        $ssn = Tools::getValue('ssn');
+        $ssn = trim(Tools::getValue('ssn'));
         if (empty($ssn)) {
             $output = array(
                 'success' => false,
@@ -33,7 +33,7 @@ class SsnAddressModuleFrontController extends ModuleFrontController
         //    die(Tools::jsonEncode($output));
         //}
 
-        $country_code = Tools::getValue('country_code');
+        $country_code = trim(Tools::getValue('country_code'));
         if (empty($country_code)) {
             $output = array(
                 'success' => false,
@@ -50,7 +50,7 @@ class SsnAddressModuleFrontController extends ModuleFrontController
             die(Tools::jsonEncode($output));
         }
 
-        $postcode = Tools::getValue('postcode');
+        $postcode = trim(Tools::getValue('postcode'));
         if (empty($postcode)) {
             $output = array(
                 'success' => false,
