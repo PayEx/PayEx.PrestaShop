@@ -1024,7 +1024,8 @@ class Factoring extends PaymentModule
             'REJECTED_BY_ACQUIRER_INSUFFICIENT_FUNDS' => $this->l('Insufficient funds'),
             'REJECTED_BY_ACQUIRER_INVALID_AMOUNT' => $this->l('Incorrect amount'),
             'USER_CANCELED' => $this->l('Payment cancelled'),
-            'CardNotAcceptedForThisPurchase' => $this->l('Your Credit Card not accepted for this purchase')
+            'CardNotAcceptedForThisPurchase' => $this->l('Your Credit Card not accepted for this purchase'),
+            'CreditCheckNotApproved' => $this->l('CreditCheck failed')
         );
         $errorMessages = array_change_key_case($errorMessages, CASE_UPPER);
 
