@@ -1,8 +1,0 @@
-Version 1.0.2
-* Updated PayEx library
-
-Version 1.0.1
-* Bugfixes
-
-Version 1.0.0
-* Init release
