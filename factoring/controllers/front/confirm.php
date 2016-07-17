@@ -246,7 +246,7 @@ class FactoringConfirmModuleFrontController extends ModuleFrontController
         }
 
         // Redirect to Order Confirmation
-        $returnUrl = _PS_BASE_URL_ . __PS_BASE_URI__.'index.php?controller=order-confirmation?key='.$customer->secure_key.'&id_cart='.(int)$this->context->cart->id.'&id_module='.(int)$this->module->id.'&id_order='.(int)$this->module->currentOrder.'&status='.$status;
+        $returnUrl = _PS_BASE_URL_ . __PS_BASE_URI__.'index.php?controller=order-confirmation&key='.$customer->secure_key.'&id_cart='.(int)$this->context->cart->id.'&id_module='.(int)$this->module->id.'&id_order='.(int)$this->module->currentOrder.'&status='.$status;
         if (!empty($message)) {
             $returnUrl .= '&message=' . $message;
         }

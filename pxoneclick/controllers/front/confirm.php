@@ -165,7 +165,7 @@ class PxoneclickConfirmModuleFrontController extends ModuleFrontController
             );
         }
 
-        $returnUrl = _PS_BASE_URL_ . __PS_BASE_URI__.'index.php?controller=order-confirmation?key='.$customer->secure_key.'&id_cart='.(int)$this->context->cart->id.'&id_module='.(int)$this->module->id.'&id_order='.(int)$this->module->currentOrder;
+        $returnUrl = _PS_BASE_URL_ . __PS_BASE_URI__. 'index.php?controller=order-confirmation&key='.$customer->secure_key.'&id_cart='.(int)$this->context->cart->id.'&id_module='.(int)$this->module->id.'&id_order='.(int)$this->module->currentOrder;
         $cancelUrl = _PS_BASE_URL_ . __PS_BASE_URI__ . 'index.php?fc=module&module=pxoneclick&controller=cancel&id_lang=' . $cart->id_lang . '&order_id=' . $this->module->currentOrder . '&token_order=' . md5(_COOKIE_KEY_ . 'orderId_' . $this->module->currentOrder) . '&key=' . $customer->secure_key;
 
         // Call PxOrder.Initialize8
