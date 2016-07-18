@@ -2,7 +2,7 @@
 <module>
 	<name>bankdebit</name>
 	<displayName><![CDATA[Payex Bank Debit]]></displayName>
-	<version><![CDATA[1.0.5]]></version>
+	<version><![CDATA[1.1.0]]></version>
 	<description><![CDATA[Accept payments for your products via PayEx Bank Debit.]]></description>
 	<author><![CDATA[AAIT]]></author>
 	<tab><![CDATA[payments_gateways]]></tab>

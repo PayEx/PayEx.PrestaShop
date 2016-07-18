@@ -2,8 +2,8 @@
 /**
  * @package    PayEx
  * @author    aait.se
- * @copyright Copyright (C) AAIT - All rights reserved.
- * @license  http://shop.aait.se/license.txt EULA
+ * @copyright Copyright (C) PayEx - All rights reserved.
+ * @license  https://www.prestashop.com/en/osl-license Open Software License (OSL 3.0)
  */
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -24,6 +24,7 @@ class Bankdebit extends PaymentModule
     public $paymentview;
     public $banks = array();
     public $responsive;
+    public $checkout_info;
 
     public $available = array(
         'NB' => 'Nordea Bank',
@@ -50,14 +51,14 @@ class Bankdebit extends PaymentModule
     {
         $this->name = 'bankdebit';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.5';
+        $this->version = '1.1.0';
         $this->author = 'AAIT';
 
         $this->currencies = true; // binding this method of payment to a specific currency
         $this->currencies_mode = 'checkbox';
 
         // Init Configuration
-        $config = Configuration::getMultiple(array('PX_BD_ACCOUNT_NUMBER', 'PX_BD_ENCRYPTION_KEY', 'PX_BD_TESTMODE', 'PX_BD_BANKS', 'PX_BD_RESPONSIVE'));
+        $config = Configuration::getMultiple(array('PX_BD_ACCOUNT_NUMBER', 'PX_BD_ENCRYPTION_KEY', 'PX_BD_TESTMODE', 'PX_BD_BANKS', 'PX_BD_RESPONSIVE', 'PX_BD_CHECKOUT_INFO'));
         $this->accountnumber = isset($config['PX_BD_ACCOUNT_NUMBER']) ? $config['PX_BD_ACCOUNT_NUMBER'] : '';
         $this->encryptionkey = isset($config['PX_BD_ENCRYPTION_KEY']) ? $config['PX_BD_ENCRYPTION_KEY'] : '';
         $this->mode = isset($config['PX_BD_TESTMODE']) ? $config['PX_BD_TESTMODE'] : 1;
@@ -65,6 +66,7 @@ class Bankdebit extends PaymentModule
         $this->paymentview = 'DIRECTDEBIT';
         $this->banks = isset($config['PX_BD_BANKS']) ? @unserialize($config['PX_BD_BANKS']) : array();
         $this->responsive = isset($config['PX_BD_RESPONSIVE']) ? (bool)$config['PX_BD_RESPONSIVE'] : false;
+        $this->checkout_info = isset($config['PX_BD_CHECKOUT_INFO']) ? (bool)$config['PX_BD_CHECKOUT_INFO'] : false;
 
         // Init PayEx
         $this->getPx()->setEnvironment($this->accountnumber, $this->encryptionkey, (bool)$this->mode);
@@ -132,6 +134,7 @@ class Bankdebit extends PaymentModule
         Configuration::updateValue('PX_BD_TESTMODE', 1);
         Configuration::updateValue('PX_BD_BANKS', serialize(array('NB', 'FSPA', 'SEB', 'SHB')));
         Configuration::updateValue('PX_BD_RESPONSIVE', false);
+        Configuration::updateValue('PX_BD_CHECKOUT_INFO', true);
         return true;
     }
 
@@ -154,6 +157,7 @@ class Bankdebit extends PaymentModule
         //Configuration::deleteByName('PX_BD_TESTMODE');
         //Configuration::deleteByName('PX_BD_BANKS');
         //Configuration::deleteByName('PX_BD_RESPONSIVE');
+        //Configuration::deleteByName('PX_BD_CHECKOUT_INFO');
 
         return true;
     }
@@ -180,6 +184,7 @@ class Bankdebit extends PaymentModule
             Configuration::updateValue('PX_BD_TESTMODE', Tools::getValue('mode'));
             Configuration::updateValue('PX_BD_BANKS', serialize(Tools::getValue('banks')));
             Configuration::updateValue('PX_BD_RESPONSIVE', Tools::getValue('responsive'));
+            Configuration::updateValue('PX_BD_CHECKOUT_INFO', (bool)Tools::getValue('checkout_info'));
         }
         $this->_html .= '<div class="conf confirm"> ' . $this->l('Settings updated') . '</div>';
     }
@@ -187,9 +192,7 @@ class Bankdebit extends PaymentModule
     private function _displayForm()
     {
         $this->_html .= '<img src="../modules/bankdebit/logo.gif" style="float:left; margin-right:15px;" width="86" height="49"><b>'
-            . $this->l('This module allows you to accept secure payments by PayEx.') . '</b><br /><br />'
-            . $this->l('This module provides PayEx Transaction Callback.') . '<br />'
-            . 'Use <a href="' . _PS_BASE_URL_ . __PS_BASE_URI__ . 'index.php?fc=module&module=payex&controller=transaction" target="_blank">this URL</a> as a Transaction Callback URL.' . '<br /><br /><br />';
+            . $this->l('This module allows you to accept Bank payments using PayEx.') . '</b><br /><br />';
 
         if (!is_array($this->banks)) {
             $this->banks = array();
@@ -254,6 +257,15 @@ class Bankdebit extends PaymentModule
                             </select>
 						</td>
 					</tr>
+					<tr>
+						<td width="130" style="vertical-align: top;">' . $this->l('Send order lines and billing/delivery addresses to PayEx') . '</td>
+						<td>
+							<select name="checkout_info">
+                                <option ' . ((bool) Tools::getValue('checkout_info', $this->checkout_info) === true ? 'selected="selected"' : '') . 'value="1">Enabled</option>
+                                <option ' . ((bool) Tools::getValue('checkout_info', $this->checkout_info) === false ? 'selected="selected"' : '') . 'value="0">Disabled</option>
+                            </select>
+						</td>
+					</tr>
 					<tr><td colspan="2" align="center"><input class="button" name="btnSubmit" value="' . $this->l('Update settings') . '" type="submit" /></td></tr>
 				</table>
 			</fieldset>
@@ -289,10 +301,19 @@ class Bankdebit extends PaymentModule
             return;
         }
 
+        $banks = array();
+        $available_banks = $this->available;
+        foreach($this->banks as $_id => $bank_code) {
+            if (isset($available_banks[$bank_code])) {
+                $banks[$bank_code] = $available_banks[$bank_code];
+            }
+        }
+
         $this->smarty->assign(array(
             'this_path' => $this->_path,
             'this_path_px' => $this->_path,
-            'this_path_ssl' => Tools::getShopDomainSsl(true, true) . __PS_BASE_URI__ . 'modules/' . $this->name . '/'
+            'this_path_ssl' => Tools::getShopDomainSsl(true, true) . __PS_BASE_URI__ . 'modules/' . $this->name . '/',
+            'banks' => $banks
         ));
         return $this->display(__FILE__, 'payment.tpl');
     }
@@ -308,63 +329,25 @@ class Bankdebit extends PaymentModule
             return;
         }
 
-        $orderRef = Tools::getValue('orderRef');
-        if (empty($orderRef)) {
-            return;
-        }
-
-        $order = $params['objOrder'];
-
-        $params = array(
-            'accountNumber' => '',
-            'orderRef' => $orderRef
-        );
-        $result = $this->getPx()->Complete($params);
-        if ($result['errorCodeSimple'] !== 'OK') {
-            $order->setCurrentState(Configuration::get('PS_OS_ERROR'));
-            die(Tools::displayError($this->getVerboseErrorMessage($result)));
-        }
-
-        if (!isset($result['transactionNumber'])) {
-            $result['transactionNumber'] = '';
-        }
-
-        // Check Transaction
-        if (count($this->getTransaction($result['transactionNumber'])) > 0) {
-            die(Tools::displayError($this->l('This transaction has already been registered in store.')));
-        }
-
-        // Save Transaction
-        $this->addTransaction($order->id, $result['transactionNumber'], $result['transactionStatus'], $result, isset($result['date']) ? strtotime($result['date']) : time());
-
         $message = '';
-        /* Transaction statuses:
-        0=Sale, 1=Initialize, 2=Credit, 3=Authorize, 4=Cancel, 5=Failure, 6=Capture */
-        switch ((int)$result['transactionStatus']) {
-            case 0:
-            case 6:
-                $order->setCurrentState(Configuration::get('PS_OS_PAYEX_CAPTURED'));
-                $order->setInvoice(true);
-                $invoice = !empty($order->invoice_number) ? new OrderInvoice($order->invoice_number) : null;
-                $order->addOrderPayment($order->total_paid, $order->payment, $result['transactionNumber'], null, date('Y-m-d H:i:s', isset($result['date']) ? strtotime($result['date']) : time()), $invoice);
+        $order = $params['objOrder'];
+        switch ($order->current_state) {
+            case Configuration::get('PS_OS_PAYEX_CAPTURED'):
                 $status = 'ok';
                 break;
-            case 3:
-                $order->setCurrentState(Configuration::get('PS_OS_PAYEX_AUTH'));
+            case Configuration::get('PS_OS_PAYEX_AUTH'):
                 $status = 'pending';
                 break;
-            case 4:
-                // Cancel
-                $order->setCurrentState(Configuration::get('PS_OS_CANCELED'));
+            case Configuration::get('PS_OS_CANCELED'):
                 $status = 'cancel';
                 break;
-            case 5:
-            default:
-                // Cancel
-                $order->setCurrentState(Configuration::get('PS_OS_ERROR'));
+            case Configuration::get('PS_OS_ERROR'):
                 $status = 'error';
-                $message = $this->getVerboseErrorMessage($result);
+                $message = $this->l('Payment error');
                 break;
+            default:
+                $status = 'error';
+                $message = $this->l('Order error');
         }
 
         $this->smarty->assign(array(
@@ -377,7 +360,7 @@ class Bankdebit extends PaymentModule
             $this->smarty->assign('reference', $order->reference);
         }
 
-        return $this->display(__FILE__, 'payment_return.tpl');
+        return $this->display(__FILE__, 'confirmation.tpl');
     }
 
     /**
@@ -403,16 +386,23 @@ class Bankdebit extends PaymentModule
 
     /**
      * Get PayEx handler
-     * @return Px
+     * @return \PayEx\Px
      */
     public function getPx()
     {
         if (!$this->_px) {
-            if (!class_exists('Px')) {
-                require_once dirname(__FILE__) . '/library/Px/Px.php';
+            if (!class_exists('\PayEx\Px', false)) {
+                require_once _PS_ROOT_DIR_ . '/vendor/payex/php-api/src/PayEx/Px.php';
             }
 
-            $this->_px = new Px();
+            $this->_px = new \PayEx\Px();
+
+            $this->_px->setUserAgent(sprintf("PayEx.Ecommerce.Php/%s PHP/%s Prestahop/%s PayEx.Prestahop/%s",
+                \PayEx\Px::VERSION,
+                phpversion(),
+                _PS_VERSION_,
+                $this->version
+            ));
         }
 
         return $this->_px;
