@@ -2,8 +2,8 @@
 /**
  * @package    PayEx
  * @author    aait.se
- * @copyright Copyright (C) AAIT - All rights reserved.
- * @license  http://shop.aait.se/license.txt EULA
+ * @copyright Copyright (C) PayEx - All rights reserved.
+ * @license  https://www.prestashop.com/en/osl-license Open Software License (OSL 3.0)
  */
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -32,7 +32,7 @@ class Payex extends PaymentModule
     {
         $this->name = 'payex';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.7';
+        $this->version = '1.1.0';
         $this->author = 'AAIT';
 
         $this->currencies = true; // binding this method of payment to a specific currency
@@ -46,7 +46,7 @@ class Payex extends PaymentModule
         $this->transactiontype = isset($config['PX_TRANSACTION_TYPE']) ? $config['PX_TRANSACTION_TYPE'] : 'AUTHORIZATION';
         $this->paymentview = isset($config['PX_PAYMENT_VIEW']) ? $config['PX_PAYMENT_VIEW'] : 'PX';
         $this->responsive = isset($config['PX_RESPONSIVE']) ? (bool)$config['PX_RESPONSIVE'] : false;
-        $this->checkout_info = isset($config['PX_CHECKOUT_INFO']) ? (bool)$config['PX_CHECKOUT_INFO'] : false;;
+        $this->checkout_info = isset($config['PX_CHECKOUT_INFO']) ? (bool)$config['PX_CHECKOUT_INFO'] : false;
 
         // Init PayEx
         $this->getPx()->setEnvironment($this->accountnumber, $this->encryptionkey, (bool)$this->mode);
@@ -178,7 +178,7 @@ class Payex extends PaymentModule
         $this->_html .= '<img src="../modules/payex/logo.gif" style="float:left; margin-right:15px;" width="86" height="49"><b>'
             . $this->l('This module allows you to accept secure payments by PayEx.') . '</b><br /><br />'
             . $this->l('This module provides PayEx Transaction Callback.') . '<br />'
-            . 'Use <a href="' . _PS_BASE_URL_ . __PS_BASE_URI__ . 'index.php?fc=module&module=payex&controller=transaction" target="_blank">this URL</a> as a Transaction Callback URL.' . '<br /><br /><br />';
+            . 'Use <a href="' . _PS_BASE_URL_ . __PS_BASE_URI__ . 'modules/payex/transaction.php" target="_blank">this URL</a> as a Transaction Callback URL.' . '<br /><br /><br />';
 
         $this->_html .=
             '<form action="' . Tools::htmlentitiesUTF8($_SERVER['REQUEST_URI']) . '" method="post">
@@ -298,63 +298,25 @@ class Payex extends PaymentModule
             return;
         }
 
-        $orderRef = Tools::getValue('orderRef');
-        if (empty($orderRef)) {
-            return;
-        }
-
-        $order = $params['objOrder'];
-
-        $params = array(
-            'accountNumber' => '',
-            'orderRef' => $orderRef
-        );
-        $result = $this->getPx()->Complete($params);
-        if ($result['errorCodeSimple'] !== 'OK') {
-            $order->setCurrentState(Configuration::get('PS_OS_ERROR'));
-            die(Tools::displayError($this->getVerboseErrorMessage($result)));
-        }
-
-        if (!isset($result['transactionNumber'])) {
-            $result['transactionNumber'] = '';
-        }
-
-        // Check Transaction
-        if (count($this->getTransaction($result['transactionNumber'])) > 0) {
-            die(Tools::displayError($this->l('This transaction has already been registered in store.')));
-        }
-
-        // Save Transaction
-        $this->addTransaction($order->id, $result['transactionNumber'], $result['transactionStatus'], $result, isset($result['date']) ? strtotime($result['date']) : time());
-
         $message = '';
-        /* Transaction statuses:
-        0=Sale, 1=Initialize, 2=Credit, 3=Authorize, 4=Cancel, 5=Failure, 6=Capture */
-        switch ((int)$result['transactionStatus']) {
-            case 0:
-            case 6:
-                $order->setCurrentState(Configuration::get('PS_OS_PAYEX_CAPTURED'));
-                $order->setInvoice(true);
-                $invoice = !empty($order->invoice_number) ? new OrderInvoice($order->invoice_number) : null;
-                $order->addOrderPayment($order->total_paid, $order->payment, $result['transactionNumber'], null, date('Y-m-d H:i:s', isset($result['date']) ? strtotime($result['date']) : time()), $invoice);
+        $order = $params['objOrder'];
+        switch ($order->current_state) {
+            case Configuration::get('PS_OS_PAYEX_CAPTURED'):
                 $status = 'ok';
                 break;
-            case 3:
-                $order->setCurrentState(Configuration::get('PS_OS_PAYEX_AUTH'));
+            case Configuration::get('PS_OS_PAYEX_AUTH'):
                 $status = 'pending';
                 break;
-            case 4:
-                // Cancel
-                $order->setCurrentState(Configuration::get('PS_OS_CANCELED'));
+            case Configuration::get('PS_OS_CANCELED'):
                 $status = 'cancel';
                 break;
-            case 5:
-            default:
-                // Cancel
-                $order->setCurrentState(Configuration::get('PS_OS_ERROR'));
+            case Configuration::get('PS_OS_ERROR'):
                 $status = 'error';
-                $message = $this->getVerboseErrorMessage($result);
+                $message = $this->l('Payment error');
                 break;
+            default:
+                $status = 'error';
+                $message = $this->l('Order error');
         }
 
         $this->smarty->assign(array(
@@ -367,7 +329,7 @@ class Payex extends PaymentModule
             $this->smarty->assign('reference', $order->reference);
         }
 
-        return $this->display(__FILE__, 'payment_return.tpl');
+        return $this->display(__FILE__, 'confirmation.tpl');
     }
 
     /**
@@ -393,16 +355,23 @@ class Payex extends PaymentModule
 
     /**
      * Get PayEx handler
-     * @return Px
+     * @return \PayEx\Px
      */
     public function getPx()
     {
         if (!$this->_px) {
-            if (!class_exists('Px')) {
-                require_once dirname(__FILE__) . '/library/Px/Px.php';
+            if (!class_exists('\PayEx\Px', false)) {
+                require_once _PS_ROOT_DIR_ . '/vendor/payex/php-api/src/PayEx/Px.php';
             }
 
-            $this->_px = new Px();
+            $this->_px = new \PayEx\Px();
+
+            $this->_px->setUserAgent(sprintf("PayEx.Ecommerce.Php/%s PHP/%s Prestahop/%s PayEx.Prestahop/%s",
+                \PayEx\Px::VERSION,
+                phpversion(),
+                _PS_VERSION_,
+                $this->version
+            ));
         }
 
         return $this->_px;
