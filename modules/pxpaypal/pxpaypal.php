@@ -383,16 +383,23 @@ class Pxpaypal extends PaymentModule
 
     /**
      * Get PayEx handler
-     * @return Px
+     * @return \PayEx\Px
      */
     public function getPx()
     {
         if (!$this->_px) {
-            if (!class_exists('Px')) {
-                require_once dirname(__FILE__) . '/library/Px/Px.php';
+            if (!class_exists('\PayEx\Px', false)) {
+                require_once _PS_ROOT_DIR_ . '/vendor/payex/php-api/src/PayEx/Px.php';
             }
 
-            $this->_px = new Px();
+            $this->_px = new \PayEx\Px();
+
+            $this->_px->setUserAgent(sprintf("PayEx.Ecommerce.Php/%s PHP/%s Prestahop/%s PayEx.Prestahop/%s",
+                \PayEx\Px::VERSION,
+                phpversion(),
+                _PS_VERSION_,
+                $this->version
+            ));
         }
 
         return $this->_px;
