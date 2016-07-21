@@ -1,0 +1,23 @@
+Version 1.1.0
+* Feature: Order will be placed after redirect from payex
+* Feature: Customer will be redirected to payex after payment select
+* Cart will be restored when payment cancel
+* Fixed: Invoice overpaid
+* Improved Transaction Callback. TC URL was changed
+* Updated Px library
+* Added "Send order lines and billing/delivery addresses to PayEx" option
+
+Version 1.0.4
+* Use PayEx Payment Page 2.0 as "Responsive" option
+
+Version 1.0.3
+* Updated PayEx library
+
+Version 1.0.2
+* Bugfixes
+
+Version 1.0.1
+* Bugfixes
+
+Version 1.0.0
+* Init release
