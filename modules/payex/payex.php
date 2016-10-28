@@ -542,6 +542,9 @@ class Payex extends PaymentModule
         if (Tools::isSubmit('process_fetch') && isset($_POST['payex_transaction_id'])) {
             $payex_transaction_id = $_POST['payex_transaction_id'];
 
+            // Init Environment
+            $this->getPx()->setEnvironment($this->accountnumber, $this->encryptionkey, (bool)$this->mode);
+
             // Call PxOrder.GetTransactionDetails2
             $params = array(
                 'accountNumber' => '',
@@ -577,6 +580,9 @@ class Payex extends PaymentModule
 
             $order = new Order($order_id);
             $order_fields = $order->getFields();
+
+            // Init Environment
+            $this->getPx()->setEnvironment($this->accountnumber, $this->encryptionkey, (bool)$this->mode);
 
             // Call PxOrder.Capture5
             $params = array(
@@ -622,6 +628,9 @@ class Payex extends PaymentModule
             $payex_transaction_id = $_POST['payex_transaction_id'];
 
             $order = new Order($order_id);
+
+            // Init Environment
+            $this->getPx()->setEnvironment($this->accountnumber, $this->encryptionkey, (bool)$this->mode);
 
             // Call PxOrder.Cancel2
             $params = array(

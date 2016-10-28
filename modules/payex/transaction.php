@@ -44,6 +44,9 @@ if (count($module->getTransaction($transactionId)) > 0) {
     exit('OK');
 }
 
+// Init Environment
+$module->getPx()->setEnvironment($module->accountnumber, $module->encryptionkey, (bool)$module->mode);
+
 // Call PxOrder.GetTransactionDetails2
 $params = array(
     'accountNumber' => '',
