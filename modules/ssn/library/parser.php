@@ -1,6 +1,12 @@
 <?php
-
-
+/**
+* AAIT
+*
+*  @author    aait.se
+*  @package   PayEx
+*  @copyright Copyright (C) AAIT - All rights reserved.
+*  @license   http://shop.aait.se/license.txt  EULA
+*/
 
 /**
  * Split a full name into its constituent parts
@@ -51,6 +57,8 @@ class FullNameParser {
    * @return array returns associative array of name parts
    */
   public function parse_name($full_name) {
+  	$name = array();
+	$salutation = $suffix = $fname = $initials = $lname = '';
 
     # Remove leading/trailing whitespace
     $full_name = trim($full_name);
@@ -67,7 +75,7 @@ class FullNameParser {
       $professional_suffix = preg_replace("/, */", '', $professional_suffix);
       # Normalize the case of suffix if found in dictionary
       foreach ($this->dict['suffixes']['prof'] as $prosuffix) {
-        if (strtolower($prosuffix) === strtolower($professional_suffix)) {
+        if (Tools::strtolower($prosuffix) === Tools::strtolower($professional_suffix)) {
           $professional_suffix = $prosuffix;
         }
       }
@@ -77,7 +85,7 @@ class FullNameParser {
     $has_nick = $this->get_nickname($full_name);
     if ($has_nick) {
       # Remove wrapper chars from around nickname
-      $name['nickname'] = substr($has_nick, 1, (strlen($has_nick) - 2));
+      $name['nickname'] = Tools::substr($has_nick, 1, (Tools::strlen($has_nick) - 2));
       # Remove the nickname from the full name
       $full_name = str_replace($has_nick, '', $full_name);
       # Get rid of consecutive spaces left by the removal
@@ -129,15 +137,15 @@ class FullNameParser {
           # for ex: "R. Jason Smith" => "Jason Smith" & "R." is stored as an initial
           # but "R. J. Smith" => "R. Smith" and "J." is stored as an initial
           if ($this->is_initial($unfiltered_name_parts[$i+1])) {
-            $fname .= " ".strtoupper($word);
+            $fname .= " ".Tools::strtoupper($word);
           }
           else {
-            $initials .= " ".strtoupper($word);
+            $initials .= " ".Tools::strtoupper($word);
           }
         }
         # otherwise, just go ahead and save the initial
         else {
-          $initials .= " ".strtoupper($word);
+          $initials .= " ".Tools::strtoupper($word);
         }
       }
       else {
@@ -228,7 +236,7 @@ class FullNameParser {
   protected function is_suffix($word, $name) {
 
     # Ignore periods, normalize case
-    $word = str_replace('.', '', strtolower($word));
+    $word = str_replace('.', '', Tools::strtolower($word));
 
     # Search the array for our word
     $line_match = array_search($word, array_map('strtolower', $this->dict['suffixes']['line']));
@@ -280,7 +288,7 @@ class FullNameParser {
    * @return boolean
    */
   protected function is_salutation($word) {
-    $word = str_replace('.', '', strtolower($word));
+    $word = str_replace('.', '', Tools::strtolower($word));
     foreach ($this->dict['prefix'] as $replace => $originals) {
       if (in_array($word, $originals)) {
         return $replace;
@@ -298,7 +306,7 @@ class FullNameParser {
    * @return boolean
    */
   protected function is_compound($word) {
-    return array_search(strtolower($word), $this->dict['compound']);
+    return array_search(Tools::strtolower($word), $this->dict['compound']);
   }
 
 
@@ -310,7 +318,7 @@ class FullNameParser {
    * @return boolean
    */
   protected function is_initial($word) {
-    return ((strlen($word) == 1) || (strlen($word) == 2 && $word{1} == "."));
+    return ((Tools::strlen($word) == 1) || (Tools::strlen($word) == 2 && $word{1} == "."));
   }
 
 
@@ -343,33 +351,33 @@ class FullNameParser {
     }
 
     # Special case for single letters
-    if (strlen($word) == 1) {
-      $word = strtoupper($word);
+    if (Tools::strlen($word) == 1) {
+      $word = Tools::strtoupper($word);
     }
 
     # Special case for 2-letter words
-    if (strlen($word) == 2) {
+    if (Tools::strlen($word) == 2) {
       # Both letters vowels (uppercase both)
-      if (in_array(strtolower($word{0}), $this->dict['vowels']) && in_array(strtolower($word{1}), $this->dict['vowels'])) {
-        $word = strtoupper($word);
+      if (in_array(Tools::strtolower($word{0}), $this->dict['vowels']) && in_array(Tools::strtolower($word{1}), $this->dict['vowels'])) {
+        $word = Tools::strtoupper($word);
       }
       # Both letters consonants (uppercase both)
-      if (!in_array(strtolower($word{0}), $this->dict['vowels']) && !in_array(strtolower($word{1}), $this->dict['vowels'])) {
-        $word = strtoupper($word);
+      if (!in_array(Tools::strtolower($word{0}), $this->dict['vowels']) && !in_array(Tools::strtolower($word{1}), $this->dict['vowels'])) {
+        $word = Tools::strtoupper($word);
       }
       # First letter is vowel, second letter consonant (uppercase first)
-      if (in_array(strtolower($word{0}), $this->dict['vowels']) && !in_array(strtolower($word{1}), $this->dict['vowels'])) {
-        $word = ucfirst(strtolower($word));
+      if (in_array(Tools::strtolower($word{0}), $this->dict['vowels']) && !in_array(Tools::strtolower($word{1}), $this->dict['vowels'])) {
+        $word = Tools::ucfirst(Tools::strtolower($word));
       }
       # First letter consonant, second letter vowel or "y" (uppercase first)
-      if (!in_array(strtolower($word{0}), $this->dict['vowels']) && (in_array(strtolower($word{1}), $this->dict['vowels']) || strtolower($word{1}) == 'y')) {
-        $word = ucfirst(strtolower($word));
+      if (!in_array(Tools::strtolower($word{0}), $this->dict['vowels']) && (in_array(Tools::strtolower($word{1}), $this->dict['vowels']) || Tools::strtolower($word{1}) == 'y')) {
+        $word = Tools::ucfirst(Tools::strtolower($word));
       }
     }
 
     # Fix case for words which aren't initials, but are all upercase or lowercase
-    if ( (strlen($word) >= 3) && (ctype_upper($word) || ctype_lower($word)) ) {
-      $word = ucfirst(strtolower($word));
+    if ( (Tools::strlen($word) >= 3) && (ctype_upper($word) || ctype_lower($word)) ) {
+      $word = Tools::ucfirst(Tools::strtolower($word));
     }
 
     return $word;
@@ -377,10 +385,11 @@ class FullNameParser {
 
   # helper public function for fix_case
   public function safe_ucfirst($seperator, $word) {
+	$words = array();
     # uppercase words split by the seperator (ex. dashes or periods)
     $parts = explode($seperator, $word);
     foreach ($parts as $word) {
-      $words[] = ($this->is_camel_case($word)) ? $word : ucfirst(strtolower($word));
+      $words[] = ($this->is_camel_case($word)) ? $word : Tools::ucfirst(Tools::strtolower($word));
     }
     return implode($seperator, $words);
   }

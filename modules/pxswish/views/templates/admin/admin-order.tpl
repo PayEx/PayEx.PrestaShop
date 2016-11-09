@@ -1,3 +1,11 @@
+{*
+* AAIT
+*
+*  @author    aait.se
+*  @package   PayEx
+*  @copyright Copyright (C) AAIT - All rights reserved.
+*  @license   http://shop.aait.se/license.txt  EULA
+*}
 {literal}
     <script type="application/javascript">
         $(document).ready(function () {
@@ -120,7 +128,7 @@
 
 <br/>
 <fieldset>
-    <legend><img src="{$module_dir}actions.gif" alt=""/> {l s='PayEx Payment actions' mod='pxswish'}</legend>
+    <legend><img src="{$module_dir|escape:'htmlall':'UTF-8'}/views/img/actions.gif" alt=""/> {l s='PayEx Payment actions' mod='pxswish'}</legend>
     <input type="hidden" id="payex_order_id" name="payex_order_id" value="{$order_id|escape:'htmlall':'UTF-8'}"/>
     <input type="hidden" id="payex_transaction_id" name="payex_transaction_id" value="{$transaction_id|escape:'htmlall':'UTF-8'}"/>
     {if $transaction_status == '3'}
@@ -139,7 +147,7 @@
 
 <br/>
 <fieldset>
-    <legend><img src="{$module_dir}information.png" alt=""/> {l s='PayEx transaction details' mod='pxswish'}</legend>
+    <legend><img src="{$module_dir|escape:'htmlall':'UTF-8'}/views/img/information.png" alt=""/> {l s='PayEx transaction details' mod='pxswish'}</legend>
     <table class="table" cellpadding="0" cellspacing="0">
         {foreach from=$transaction_data key=k item=v}
             <tr>

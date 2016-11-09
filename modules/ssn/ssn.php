@@ -1,4 +1,13 @@
 <?php
+/**
+* AAIT
+*
+*  @author    aait.se
+*  @package   PayEx
+*  @copyright Copyright (C) AAIT - All rights reserved.
+*  @license   http://shop.aait.se/license.txt  EULA
+*/
+
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -170,7 +179,7 @@ class Ssn extends Module
      */
     public function hookHeader($params)
     {
-        $this->context->controller->addJS(($this->_path) . 'js/ssn.js');
+        $this->context->controller->addJS(($this->_path) . '/views/js/ssn.js');
     }
 
     /**
