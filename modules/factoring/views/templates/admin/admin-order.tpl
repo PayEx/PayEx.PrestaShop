@@ -1,3 +1,11 @@
+{*
+* AAIT
+*
+*  @author    aait.se
+*  @package   PayEx
+*  @copyright Copyright (C) AAIT - All rights reserved.
+*  @license   http://shop.aait.se/license.txt  EULA
+*}
 {literal}
     <script type="application/javascript">
         $(document).ready(function () {
@@ -120,18 +128,18 @@
 
 <br/>
 <fieldset>
-    <legend><img src="{$module_dir}actions.gif" alt=""/> {l s='PayEx Payment actions' mod='payex'}</legend>
+    <legend><img src="{$module_dir|escape:'htmlall':'UTF-8'}/views/img/actions.gif" alt=""/> {l s='PayEx Payment actions' mod='factoring'}</legend>
     <input type="hidden" id="payex_order_id" name="payex_order_id" value="{$order_id|escape:'htmlall':'UTF-8'}"/>
     <input type="hidden" id="payex_transaction_id" name="payex_transaction_id" value="{$transaction_id|escape:'htmlall':'UTF-8'}"/>
     {if $transaction_status == '3'}
-        <input type="button" id="process_capture" name="process_capture" value="{l s='Capture' mod='payex'}"
+        <input type="button" id="process_capture" name="process_capture" value="{l s='Capture' mod='factoring'}"
                class="button"/>
-        <input type="button" id="process_cancel" name="process_cancel" value="{l s='Cancel' mod='payex'}"
+        <input type="button" id="process_cancel" name="process_cancel" value="{l s='Cancel' mod='factoring'}"
                class="button"/>
     {/if}
     {if $transaction_status == '0' || $transaction_status == '6'}
-        {l s='Refund' mod='payex'}: <input type="text" id="refund_amount" name="refund_amount" value="{($order_amount)|floatval}" />
-        <input type="button" id="process_refund" name="process_refund" value="{l s='Refund' mod='payex'}"
+        {l s='Refund' mod='factoring'}: <input type="text" id="refund_amount" name="refund_amount" value="{($order_amount)|floatval}" />
+        <input type="button" id="process_refund" name="process_refund" value="{l s='Refund' mod='factoring'}"
                class="button"/>
     {/if}
     <br/>
@@ -139,7 +147,7 @@
 
 <br/>
 <fieldset>
-    <legend><img src="{$module_dir}information.png" alt=""/> {l s='PayEx transaction details' mod='payex'}</legend>
+    <legend><img src="{$module_dir|escape:'htmlall':'UTF-8'}/views/img/information.png" alt=""/> {l s='PayEx transaction details' mod='factoring'}</legend>
     <table class="table" cellpadding="0" cellspacing="0">
         {foreach from=$transaction_data key=k item=v}
             <tr>
@@ -148,7 +156,7 @@
             </tr>
         {/foreach}
     </table>
-    <input type="button" id="process_fetch" name="process_fetch" value="{l s='Fetch Info' mod='payex'}"
+    <input type="button" id="process_fetch" name="process_fetch" value="{l s='Fetch Info' mod='factoring'}"
            class="button"/>
     <br/>
 </fieldset>

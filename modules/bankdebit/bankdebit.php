@@ -1,10 +1,14 @@
 <?php
 /**
- * @package    PayEx
- * @author    aait.se
- * @copyright Copyright (C) PayEx - All rights reserved.
- * @license  https://www.prestashop.com/en/osl-license Open Software License (OSL 3.0)
- */
+* AAIT
+*
+*  @author    aait.se
+*  @package    PayEx
+*  @copyright 2007-2015 AAIT
+*  @license   http://shop.aait.se/license.txt  EULA
+*  International Registered Trademark & Property of PrestaShop SA
+*/
+
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -303,7 +307,7 @@ class Bankdebit extends PaymentModule
 
         $banks = array();
         $available_banks = $this->available;
-        foreach($this->banks as $_id => $bank_code) {
+        foreach($this->banks as $bank_code) {
             if (isset($available_banks[$bank_code])) {
                 $banks[$bank_code] = $available_banks[$bank_code];
             }
@@ -527,7 +531,7 @@ class Bankdebit extends PaymentModule
                 @mkdir($cache_directory, 0777);
             }
 
-            $last_check = (int) file_get_contents($cache_directory . '/last_check');
+            $last_check = (int) Tools::file_get_contents($cache_directory . '/last_check');
             if (!$last_check || (time() > $last_check + (12 * 60 * 60))) {
                 $last_check = time();
                 file_put_contents($cache_directory . '/last_check', $last_check);
@@ -560,18 +564,18 @@ class Bankdebit extends PaymentModule
     public function hookBackOfficeHeader()
     {
         /* Continue only if we are on the order's details page (Back-office) */
-        if (!isset($_GET['vieworder']) || !isset($_GET['id_order'])) {
+        if (!Tools::getValue('vieworder') || !Tools::getValue('id_order')) {
             return;
         }
 
-        $order = new Order($_GET['id_order']);
+        $order = new Order(Tools::getValue('id_order'));
         if ($order->module !== $this->name) {
             return;
         }
 
         // Fetch Info Action
-        if (Tools::isSubmit('process_fetch') && isset($_POST['payex_transaction_id'])) {
-            $payex_transaction_id = $_POST['payex_transaction_id'];
+        if (Tools::isSubmit('process_fetch') && Tools::getValue('payex_transaction_id')) {
+            $payex_transaction_id = Tools::getValue('payex_transaction_id');
 
             // Call PxOrder.GetTransactionDetails2
             $params = array(
@@ -602,9 +606,9 @@ class Bankdebit extends PaymentModule
         }
 
         // Capture Action
-        if (Tools::isSubmit('process_capture') && isset($_POST['payex_order_id']) && isset($_POST['payex_transaction_id'])) {
-            $order_id = $_POST['payex_order_id'];
-            $payex_transaction_id = $_POST['payex_transaction_id'];
+        if (Tools::isSubmit('process_capture') && Tools::getValue('payex_order_id') && Tools::getValue('payex_transaction_id')) {
+            $order_id = Tools::getValue('payex_order_id');
+            $payex_transaction_id = Tools::getValue('payex_transaction_id');
 
             $order = new Order($order_id);
             $order_fields = $order->getFields();
@@ -648,9 +652,9 @@ class Bankdebit extends PaymentModule
         }
 
         // Cancel Action
-        if (Tools::isSubmit('process_cancel') && isset($_POST['payex_order_id']) && isset($_POST['payex_transaction_id'])) {
-            $order_id = $_POST['payex_order_id'];
-            $payex_transaction_id = $_POST['payex_transaction_id'];
+        if (Tools::isSubmit('process_cancel') && Tools::getValue('payex_order_id') && Tools::getValue('payex_transaction_id')) {
+            $order_id = Tools::getValue('payex_order_id');
+            $payex_transaction_id = Tools::getValue('payex_transaction_id');
 
             $order = new Order($order_id);
 
@@ -682,11 +686,11 @@ class Bankdebit extends PaymentModule
         }
 
         // Refund Action
-        if (Tools::isSubmit('process_refund') && isset($_POST['refund_amount']) && isset($_POST['payex_order_id']) && isset($_POST['payex_transaction_id'])) {
+        if (Tools::isSubmit('process_refund') && Tools::getValue('refund_amount') && Tools::getValue('payex_order_id') && Tools::getValue('payex_transaction_id')) {
             //@todo Re-stock Items when Refund?
-            $order_id = $_POST['payex_order_id'];
-            $payex_transaction_id = $_POST['payex_transaction_id'];
-            $refund_amount = (float)$_POST['refund_amount'];
+            $order_id = Tools::getValue('payex_order_id');
+            $payex_transaction_id = Tools::getValue('payex_transaction_id');
+            $refund_amount = (float)Tools::getValue('refund_amount');
 
             $order = new Order($order_id);
             $order_fields = $order->getFields();
@@ -736,7 +740,7 @@ class Bankdebit extends PaymentModule
      */
     public function hookAdminOrder($params)
     {
-        $order_id = !empty($_GET['id_order']) ? (int)$_GET['id_order'] : 0;
+        $order_id = Tools::getValue('id_order',0);
         $order = new Order($order_id);
 
         /* Check if the order was paid with this Addon and display the Transaction details */
@@ -768,7 +772,7 @@ class Bankdebit extends PaymentModule
                 // Filter Transaction Data
                 $result = array();
                 foreach ($fields as $description => $list) {
-                    foreach ($list as $key => $value) {
+                    foreach ($list as $value) {
                         if (!empty($transaction_data[$value])) {
                             $result[$description] = $transaction_data[$value];
                             break;
@@ -835,7 +839,7 @@ class Bankdebit extends PaymentModule
     {
         $products = $order->getProductsDetail();
 
-        foreach ($products as $_key => $order_detail) {
+        foreach ($products as $order_detail) {
             $tmp = (array)$order_detail;
             $order_detail = (object)$tmp;
 
@@ -903,7 +907,7 @@ class Bankdebit extends PaymentModule
             'hu' => 'hu-HU'
         );
 
-        $locale = strtolower(isset($lang['iso_code']) ? $lang['iso_code'] : 'en');
+        $locale = Tools::strtolower(isset($lang['iso_code']) ? $lang['iso_code'] : 'en');
 
         if (isset($allowed_langs[$locale])) {
             return $allowed_langs[$locale];

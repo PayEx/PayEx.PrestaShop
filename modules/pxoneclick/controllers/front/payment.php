@@ -1,10 +1,12 @@
 <?php
 /**
- * @package    PayEx
- * @author    aait.se
- * @copyright Copyright (C) AAIT - All rights reserved.
- * @license  http://shop.aait.se/license.txt EULA
- */
+* AAIT
+*
+*  @author    aait.se
+*  @package   PayEx
+*  @copyright Copyright (C) AAIT - All rights reserved.
+*  @license   http://shop.aait.se/license.txt  EULA
+*/
 
 /**
  * @since 1.5.0

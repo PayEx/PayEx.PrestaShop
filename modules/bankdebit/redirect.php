@@ -1,9 +1,18 @@
 <?php
+/**
+* AAIT
+*
+*  @author    aait.se
+*  @package    PayEx
+*  @copyright 2007-2015 AAIT
+*  @license   http://shop.aait.se/license.txt  EULA
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
-global $cookie;
 require_once dirname(__FILE__) . '/../../config/config.inc.php';
 require_once dirname(__FILE__) . '/../../init.php';
 require_once dirname(__FILE__) . '/bankdebit.php';
+$cookie = Context::getContext()->cookie;
 
 $module = new Bankdebit();
 $cart = new Cart((int)$cookie->id_cart);
@@ -215,7 +224,7 @@ $params = array(
 );
 $result = $module->getPx()->PrepareSaleDD2($params);
 if ($result['code'] !== 'OK' || $result['description'] !== 'OK' || $result['errorCode'] !== 'OK') {
-    die(Tools::displayError($this->module->getVerboseErrorMessage($result)));
+    die(Tools::displayError($module->getVerboseErrorMessage($result)));
 }
 
 $redirectUrl = $result['redirectUrl'];

@@ -1,4 +1,12 @@
 <?php
+/**
+* AAIT
+*
+*  @author    aait.se
+*  @package   PayEx
+*  @copyright Copyright (C) AAIT - All rights reserved.
+*  @license   http://shop.aait.se/license.txt  EULA
+*/
 
 require_once dirname(__FILE__) . '/../../library/parser.php';
 

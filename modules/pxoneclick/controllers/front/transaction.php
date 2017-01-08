@@ -1,10 +1,12 @@
 <?php
 /**
- * @package    PayEx
- * @author    aait.se
- * @copyright Copyright (C) AAIT - All rights reserved.
- * @license  http://shop.aait.se/license.txt EULA
- */
+* AAIT
+*
+*  @author    aait.se
+*  @package   PayEx
+*  @copyright Copyright (C) AAIT - All rights reserved.
+*  @license   http://shop.aait.se/license.txt  EULA
+*/
 
 /**
  * @since 1.5.0
@@ -38,7 +40,7 @@ class PxoneclickTransactionModuleFrontController extends ModuleFrontController
 
         // Check Post Fields
         $this->log('TC: Requested Params: ' . var_export($_POST, true));
-        if (count($_POST) == 0 || empty($_POST['transactionNumber'])) {
+        if (count($_POST) == 0 || !Tools::getValue('transactionNumber')) {
             $this->log('TC: Error: Empty request received.');
             header(sprintf('%s %s %s', 'HTTP/1.1', '500', 'FAILURE'), true, '500');
             header(sprintf('Status: %s %s', '500', 'FAILURE'), true, '500');
@@ -46,7 +48,7 @@ class PxoneclickTransactionModuleFrontController extends ModuleFrontController
         }
 
         // Get Transaction Details
-        $transactionId = $_POST['transactionNumber'];
+        $transactionId = Tools::getValue('transactionNumber');
 
         // Call PxOrder.GetTransactionDetails2
         $params = array(
@@ -83,7 +85,7 @@ class PxoneclickTransactionModuleFrontController extends ModuleFrontController
                 // Complete order
                 $params = array(
                     'accountNumber' => '',
-                    'orderRef' => $_POST['orderRef']
+                    'orderRef' => Tools::getValue('orderRef')
                 );
                 $result = $this->module->getPx()->Complete($params);
                 if ($result['errorCodeSimple'] !== 'OK') {
