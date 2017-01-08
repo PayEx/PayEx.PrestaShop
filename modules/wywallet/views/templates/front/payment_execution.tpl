@@ -7,7 +7,7 @@
 *  @license   http://shop.aait.se/license.txt  EULA
 *}
 {capture name=path}{l s='WyWallet' mod='wywallet'}{/capture}
-{include file="$tpl_dir./breadcrumb.tpl"}
+{* include file="$tpl_dir./breadcrumb.tpl" *}
 
 <h2>{l s='Order summary' mod='wywallet'}</h2>
 

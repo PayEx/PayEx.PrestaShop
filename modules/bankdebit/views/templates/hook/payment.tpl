@@ -15,8 +15,8 @@
     });
 </script>
 <p class="payment_module">
-    <a id="bankdebit_pay" href="#" title="{l s='Pay with Bank Debit' mod='bankdebit'}" rel="nofollow">
-        <img src="{$this_path_px|escape:'htmlall':'UTF-8'}logo.gif" alt="{l s='Pay with Bank Debit' mod='bankdebit'}" style="float:left;" />
+    <a id="bankdebit_pay" href="#" title="{l s='Pay with Bank Debit' mod='bankdebit'}" rel="nofollow" style="line-height:14px;padding-left: 15px;">
+        <img src="{$this_path_px|escape:'htmlall':'UTF-8'}logo.gif" alt="{l s='Pay with Bank Debit' mod='bankdebit'}" style="float:left;margin-right:4px;" />
         <br />{l s='Pay with Bank Debit' mod='bankdebit'}
         <br style="clear:both;" />
     </a>

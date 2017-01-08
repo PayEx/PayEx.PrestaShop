@@ -8,7 +8,7 @@
 *}
 
 {capture name=path}{l s='Swish' mod='pxswish'}{/capture}
-{include file="$tpl_dir./breadcrumb.tpl"}
+{* include file="$tpl_dir./breadcrumb.tpl" *}
 
 <h2>{l s='Order summary' mod='pxswish'}</h2>
 

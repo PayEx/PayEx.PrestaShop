@@ -23,8 +23,8 @@
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 <p class="payment_module">
-    <a href="{$base_dir_ssl|escape:'htmlall':'UTF-8'}modules/payex/redirect.php" title="{l s='Pay with PayEx' mod='payex'}" rel="nofollow">
-        <img src="{$this_path_px|escape:'htmlall':'UTF-8'}logo.gif" alt="{l s='Pay with PayEx' mod='payex'}" style="float:left;" />
+    <a href="{$base_dir_ssl|escape:'htmlall':'UTF-8'}modules/payex/redirect.php" title="{l s='Pay with PayEx' mod='payex'}" rel="nofollow" style="line-height:14px;padding-left: 15px;">
+        <img src="{$this_path_px|escape:'htmlall':'UTF-8'}logo.gif" alt="{l s='Pay with PayEx' mod='payex'}" style="float:left;margin-right:4px;" />
         <br />{l s='Pay with PayEx' mod='payex'}
         <br style="clear:both;" />
     </a>

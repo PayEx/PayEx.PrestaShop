@@ -7,7 +7,7 @@
 *  @license   http://shop.aait.se/license.txt  EULA
 *}
 {capture name=path}{l s='Pay by Credit Card using PayEx' mod='pxoneclick'}{/capture}
-{include file="$tpl_dir./breadcrumb.tpl"}
+{* include file="$tpl_dir./breadcrumb.tpl" *}
 
 <h2>{l s='Order summary' mod='pxoneclick'}</h2>
 
