@@ -1,10 +1,12 @@
 <?php
 /**
- * @package    PayEx
- * @author    aait.se
- * @copyright Copyright (C) AAIT - All rights reserved.
- * @license  http://shop.aait.se/license.txt EULA
- */
+* AAIT
+*
+*  @author    aait.se
+*  @package   PayEx
+*  @copyright Copyright (C) AAIT - All rights reserved.
+*  @license   http://shop.aait.se/license.txt  EULA
+*/
 
 /**
  * @since 1.5.0
@@ -91,7 +93,6 @@ class FactoringConfirmModuleFrontController extends ModuleFrontController
         }
 
         $currency = Currency::getCurrency($cart->id_currency);
-        $lang = Language::getLanguage($cart->id_lang);
 
         $this->module->validateOrder((int)$this->context->cart->id, Configuration::get('PS_OS_PAYEX_OPEN'), 0, $this->module->displayName, null, array(), null, true, $customer->secure_key);
         $order = new Order($this->module->currentOrder);
@@ -148,7 +149,7 @@ class FactoringConfirmModuleFrontController extends ModuleFrontController
                     'countryCode' => (string) Country::getIsoById($billing_address->id_country),
                     'paymentMethod' => (string) Country::getIsoById($billing_address->id_country) === 'SE' ? 'PXFINANCINGINVOICESE' : 'PXFINANCINGINVOICENO',
                     'email' => $customer->email,
-                    'msisdn' => (substr($shipping_address->phone_mobile, 0, 1) === '+') ? $shipping_address->phone_mobile : '+' . $shipping_address->phone_mobile,
+                    'msisdn' => (Tools::substr($shipping_address->phone_mobile, 0, 1) === '+') ? $shipping_address->phone_mobile : '+' . $shipping_address->phone_mobile,
                     'ipAddress' => Tools::getRemoteAddr()
                 );
 
@@ -168,7 +169,7 @@ class FactoringConfirmModuleFrontController extends ModuleFrontController
                     'legalCity' => $shipping_address->city,
                     'legalCountryCode' => (string) Country::getIsoById($billing_address->id_country),
                     'email' => $customer->email,
-                    'msisdn' => (substr($shipping_address->phone_mobile, 0, 1) === '+') ? $shipping_address->phone_mobile : '+' . $shipping_address->phone_mobile,
+                    'msisdn' => (Tools::substr($shipping_address->phone_mobile, 0, 1) === '+') ? $shipping_address->phone_mobile : '+' . $shipping_address->phone_mobile,
                     'ipAddress' => Tools::getRemoteAddr(),
                 );
 
@@ -188,7 +189,7 @@ class FactoringConfirmModuleFrontController extends ModuleFrontController
                     'legalCity' => $shipping_address->city,
                     'legalCountryCode' => (string) Country::getIsoById($billing_address->id_country),
                     'email' => $customer->email,
-                    'msisdn' => (substr($shipping_address->phone_mobile, 0, 1) === '+') ? $shipping_address->phone_mobile : '+' . $shipping_address->phone_mobile,
+                    'msisdn' => (Tools::substr($shipping_address->phone_mobile, 0, 1) === '+') ? $shipping_address->phone_mobile : '+' . $shipping_address->phone_mobile,
                     'ipAddress' => Tools::getRemoteAddr(),
                 );
 
@@ -197,7 +198,6 @@ class FactoringConfirmModuleFrontController extends ModuleFrontController
             default:
                 $order->setCurrentState(Configuration::get('PS_OS_ERROR'));
                 die(Tools::displayError($this->module->l('Invalid payment mode')));
-                break;
         }
 
         if ($result['code'] !== 'OK' || $result['description'] !== 'OK' || $result['errorCode'] !== 'OK') {

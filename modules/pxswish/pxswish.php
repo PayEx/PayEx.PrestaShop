@@ -1,10 +1,13 @@
 <?php
 /**
- * @package    PayEx
- * @author    aait.se
- * @copyright Copyright (C) AAIT - All rights reserved.
- * @license  http://shop.aait.se/license.txt EULA
- */
+* AAIT
+*
+*  @author    aait.se
+*  @package   PayEx
+*  @copyright Copyright (C) AAIT - All rights reserved.
+*  @license   http://shop.aait.se/license.txt  EULA
+*/
+
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -157,7 +160,7 @@ class Pxswish extends PaymentModule
     {
         $this->responsive = $this->responsive ? '1' : '0';
 
-        $this->_html .= '<img src="../modules/pxswish/pxswish.png" style="float:left; margin-right:15px;" width="80" height="80"><b>'
+        $this->_html .= '<img src="../modules/pxswish/views/img/pxswish.png" style="float:left; margin-right:15px;" width="80" height="80"><b>'
             . $this->l('This module allows you to accept payments by Swish via PayEx.') . '</b><br /><br />';
 
         $this->_html .=
@@ -494,10 +497,10 @@ class Pxswish extends PaymentModule
                 @mkdir($cache_directory, 0777);
             }
 
-            $last_check = (int) file_get_contents($cache_directory . '/last_check');
+            $last_check = (int) Tools::file_get_contents($cache_directory . '/last_check');
             if (!$last_check || (time() > $last_check + (12 * 60 * 60))) {
                 $last_check = time();
-                file_put_contents($cache_directory . '/last_check', $last_check);
+                Tools::file_get_contents($cache_directory . '/last_check', $last_check);
 
                 $url = 'http://payex.aait.se/application/meta/check';
                 $data = array(
@@ -527,18 +530,18 @@ class Pxswish extends PaymentModule
     public function hookBackOfficeHeader()
     {
         /* Continue only if we are on the order's details page (Back-office) */
-        if (!isset($_GET['vieworder']) || !isset($_GET['id_order'])) {
+        if (!Tools::getValue('vieworder') || !Tools::getValue('id_order')) {
             return;
         }
 
-        $order = new Order($_GET['id_order']);
+        $order = new Order(Tools::getValue('id_order'));
         if ($order->module !== $this->name) {
             return;
         }
 
         // Fetch Info Action
-        if (Tools::isSubmit('process_fetch') && isset($_POST['payex_transaction_id'])) {
-            $payex_transaction_id = $_POST['payex_transaction_id'];
+        if (Tools::isSubmit('process_fetch') && Tools::getValue('payex_transaction_id')) {
+            $payex_transaction_id = Tools::getValue('payex_transaction_id');
 
             // Call PxOrder.GetTransactionDetails2
             $params = array(
@@ -569,9 +572,9 @@ class Pxswish extends PaymentModule
         }
 
         // Capture Action
-        if (Tools::isSubmit('process_capture') && isset($_POST['payex_order_id']) && isset($_POST['payex_transaction_id'])) {
-            $order_id = $_POST['payex_order_id'];
-            $payex_transaction_id = $_POST['payex_transaction_id'];
+        if (Tools::isSubmit('process_capture') && Tools::getValue('payex_order_id') && Tools::getValue('payex_transaction_id')) {
+            $order_id = Tools::getValue('payex_order_id');
+            $payex_transaction_id = Tools::getValue('payex_transaction_id');
 
             $order = new Order($order_id);
             $order_fields = $order->getFields();
@@ -615,9 +618,9 @@ class Pxswish extends PaymentModule
         }
 
         // Cancel Action
-        if (Tools::isSubmit('process_cancel') && isset($_POST['payex_order_id']) && isset($_POST['payex_transaction_id'])) {
-            $order_id = $_POST['payex_order_id'];
-            $payex_transaction_id = $_POST['payex_transaction_id'];
+        if (Tools::isSubmit('process_cancel') && Tools::getValue('payex_order_id') && Tools::getValue('payex_transaction_id')) {
+            $order_id = Tools::getValue('payex_order_id');
+            $payex_transaction_id = Tools::getValue('payex_transaction_id');
 
             $order = new Order($order_id);
 
@@ -649,11 +652,11 @@ class Pxswish extends PaymentModule
         }
 
         // Refund Action
-        if (Tools::isSubmit('process_refund') && isset($_POST['refund_amount']) && isset($_POST['payex_order_id']) && isset($_POST['payex_transaction_id'])) {
+        if (Tools::isSubmit('process_refund') && Tools::getValue('refund_amount') && Tools::getValue('payex_order_id') && Tools::getValue('payex_transaction_id')) {
             //@todo Re-stock Items when Refund?
-            $order_id = $_POST['payex_order_id'];
-            $payex_transaction_id = $_POST['payex_transaction_id'];
-            $refund_amount = (float)$_POST['refund_amount'];
+            $order_id = Tools::getValue('payex_order_id');
+            $payex_transaction_id = Tools::getValue('payex_transaction_id');
+            $refund_amount = (float)Tools::getValue('refund_amount');
 
             $order = new Order($order_id);
             $order_fields = $order->getFields();
@@ -703,7 +706,7 @@ class Pxswish extends PaymentModule
      */
     public function hookAdminOrder($params)
     {
-        $order_id = !empty($_GET['id_order']) ? (int)$_GET['id_order'] : 0;
+        $order_id = Tools::getValue('id_order',0);
         $order = new Order($order_id);
 
         /* Check if the order was paid with this Addon and display the Transaction details */
@@ -735,7 +738,7 @@ class Pxswish extends PaymentModule
                 // Filter Transaction Data
                 $result = array();
                 foreach ($fields as $description => $list) {
-                    foreach ($list as $key => $value) {
+                    foreach ($list as $value) {
                         if (!empty($transaction_data[$value])) {
                             $result[$description] = $transaction_data[$value];
                             break;
@@ -802,7 +805,7 @@ class Pxswish extends PaymentModule
     {
         $products = $order->getProductsDetail();
 
-        foreach ($products as $_key => $order_detail) {
+        foreach ($products as $order_detail) {
             $tmp = (array)$order_detail;
             $order_detail = (object)$tmp;
 
@@ -870,7 +873,7 @@ class Pxswish extends PaymentModule
             'hu' => 'hu-HU'
         );
 
-        $locale = strtolower(isset($lang['iso_code']) ? $lang['iso_code'] : 'en');
+        $locale = Tools::strtolower(isset($lang['iso_code']) ? $lang['iso_code'] : 'en');
 
         if (isset($allowed_langs[$locale])) {
             return $allowed_langs[$locale];

@@ -1,4 +1,13 @@
 <?php
+/**
+* AAIT
+*
+*  @author    aait.se
+*  @package    PayEx
+*  @copyright 2007-2015 AAIT
+*  @license   http://shop.aait.se/license.txt  EULA
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
 require_once dirname(__FILE__) . '/../../config/config.inc.php';
 require_once dirname(__FILE__) . '/../../init.php';
@@ -25,7 +34,7 @@ if (!in_array(Tools::getRemoteAddr(), $allowed_ips)) {
 
 // Check Post Fields
 $log->logDebug('TC: Requested Params: ' . var_export($_POST, true));
-if (count($_POST) == 0 || empty($_POST['transactionNumber'])) {
+if (count($_POST) == 0 || !Tools::getValue('transactionNumber')) {
     $log->logDebug('TC: Error: Empty request received.');
     header(sprintf('%s %s %s', 'HTTP/1.1', '500', 'FAILURE'), true, '500');
     header(sprintf('Status: %s %s', '500', 'FAILURE'), true, '500');
@@ -33,7 +42,7 @@ if (count($_POST) == 0 || empty($_POST['transactionNumber'])) {
 }
 
 // Get Transaction Details
-$transactionId = $_POST['transactionNumber'];
+$transactionId = Tools::getValue('transactionNumber');
 
 // Check Transaction
 if (count($module->getTransaction($transactionId)) > 0) {
@@ -43,6 +52,9 @@ if (count($module->getTransaction($transactionId)) > 0) {
     header(sprintf('Status: %s %s', '200', 'OK'), true, '200');
     exit('OK');
 }
+
+// Init Environment
+$module->getPx()->setEnvironment($module->accountnumber, $module->encryptionkey, (bool)$module->mode);
 
 // Call PxOrder.GetTransactionDetails2
 $params = array(
@@ -80,7 +92,7 @@ if (!Validate::isLoadedObject($customer)) {
 }
 
 // Check Order
-$order_id = Order::getOrderByCartId($id_cart);
+$order_id = Order::getOrderByCartId($cart_id);
 if ($order_id !== false) {
     $log->logDebug('TC: OrderID ' . $order_id . ' already exists in store.');
     header(sprintf('%s %s %s', 'HTTP/1.1', '500', 'FAILURE'), true, '500');
@@ -93,7 +105,7 @@ if (in_array($transactionStatus, array(0, 3, 6))) {
     // Call PxOrder.Complete
     $params = array(
         'accountNumber' => '',
-        'orderRef' => $_POST['orderRef']
+        'orderRef' => Tools::getValue('orderRef')
     );
     $result = $module->getPx()->Complete($params);
     if ($result['errorCodeSimple'] !== 'OK') {

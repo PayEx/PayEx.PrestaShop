@@ -1,3 +1,12 @@
+/**
+* AAIT
+*
+*  @author    aait.se
+*  @package   PayEx
+*  @copyright Copyright (C) AAIT - All rights reserved.
+*  @license   http://shop.aait.se/license.txt  EULA
+*/
+
 $(document).ready(function () {
     // Attach field to form
     if ($('#add_address').length) {

@@ -1,11 +1,20 @@
 <?php
+/**
+* AAIT
+*
+*  @author    aait.se
+*  @package    PayEx
+*  @copyright 2007-2015 AAIT
+*  @license   http://shop.aait.se/license.txt  EULA
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
-global $cookie;
 require_once dirname(__FILE__) . '/../../config/config.inc.php';
 require_once dirname(__FILE__) . '/../../init.php';
 require_once dirname(__FILE__) . '/payex.php';
 
 $module = new Payex();
+$cookie = Context::getContext()->cookie;
 $cart = new Cart((int)$cookie->id_cart);
 if (!Validate::isLoadedObject($cart)) {
     Tools::redirect('index.php?controller=order&step=1');

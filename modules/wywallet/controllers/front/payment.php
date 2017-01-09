@@ -1,10 +1,13 @@
 <?php
 /**
- * @package    Wywallet
- * @author    aait.se
- * @copyright Copyright (C) AAIT - All rights reserved.
- * @license  http://shop.aait.se/license.txt EULA
- */
+* AAIT
+*
+*  @author    aait.se
+*  @package    Wywallet
+*  @copyright 2007-2015 AAIT
+*  @license   http://shop.aait.se/license.txt  EULA
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
 /**
  * @since 1.5.0

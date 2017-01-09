@@ -1,11 +1,20 @@
 <?php
+/**
+* AAIT
+*
+*  @author    aait.se
+*  @package    PayEx
+*  @copyright 2007-2015 AAIT
+*  @license   http://shop.aait.se/license.txt  EULA
+*  International Registered Trademark & Property of PrestaShop SA
+*/
 
-global $cookie;
 require_once dirname(__FILE__) . '/../../config/config.inc.php';
 require_once dirname(__FILE__) . '/../../init.php';
 require_once dirname(__FILE__) . '/payex.php';
 
 $module = new Payex();
+$cookie = Context::getContext()->cookie;
 $cart = new Cart((int)$cookie->id_cart);
 if (!Validate::isLoadedObject($cart)) {
     Tools::redirect('index.php?controller=order&step=1');
@@ -26,7 +35,7 @@ foreach (Module::getPaymentModules() as $item) {
 }
 
 if (!$authorized) {
-    die($this->module->l('This payment method is not available.', 'validation'));
+    die($module->l('This payment method is not available.', 'validation'));
 }
 
 // Check Order Ref
@@ -45,7 +54,7 @@ $params = array(
 );
 $result = $module->getPx()->Complete($params);
 if ($result['errorCodeSimple'] !== 'OK') {
-    die(Tools::displayError($this->getVerboseErrorMessage($result)));
+    die(Tools::displayError($module->getVerboseErrorMessage($result)));
 }
 
 if (!isset($result['transactionNumber'])) {
@@ -54,7 +63,7 @@ if (!isset($result['transactionNumber'])) {
 
 // Check Transaction
 if (count($module->getTransaction($result['transactionNumber'])) > 0) {
-    die(Tools::displayError($this->l('This transaction has already been registered in store.')));
+    die(Tools::displayError($module->l('This transaction has already been registered in store.')));
 }
 
 /* Transaction statuses:
@@ -66,7 +75,7 @@ switch ((int)$result['transactionStatus']) {
         $module->validateOrder($cart_id, Configuration::get('PS_OS_PAYEX_CAPTURED'), $amount, $module->displayName, null, array(), null, true, $customer->secure_key);
         $order = new Order($module->currentOrder);
         if (!Validate::isLoadedObject($order)) {
-            die(Tools::displayError($this->l('Unable to place order.')));
+            die(Tools::displayError($module->l('Unable to place order.')));
         }
 
         // Save Transaction
@@ -79,7 +88,7 @@ switch ((int)$result['transactionStatus']) {
         $module->validateOrder($cart_id, Configuration::get('PS_OS_PAYEX_AUTH'), 0, $module->displayName, null, array(), null, true, $customer->secure_key);
         $order = new Order($module->currentOrder);
         if (!Validate::isLoadedObject($order)) {
-            die(Tools::displayError($this->l('Unable to place order.')));
+            die(Tools::displayError($module->l('Unable to place order.')));
         }
 
         // Save Transaction
@@ -90,7 +99,7 @@ switch ((int)$result['transactionStatus']) {
         $module->validateOrder($cart_id, Configuration::get('PS_OS_CANCELED'), 0, $module->displayName, null, array(), null, true, $customer->secure_key);
         $order = new Order($module->currentOrder);
         if (!Validate::isLoadedObject($order)) {
-            die(Tools::displayError($this->l('Unable to place order.')));
+            die(Tools::displayError($module->l('Unable to place order.')));
         }
 
         // Save Transaction
@@ -102,7 +111,7 @@ switch ((int)$result['transactionStatus']) {
         $module->validateOrder($cart_id, Configuration::get('PS_OS_ERROR'), 0, $module->displayName, null, array(), null, true, $customer->secure_key);
         $order = new Order($module->currentOrder);
         if (!Validate::isLoadedObject($order)) {
-            die(Tools::displayError($this->l('Unable to place order.')));
+            die(Tools::displayError($module->l('Unable to place order.')));
         }
 
         // Save Transaction

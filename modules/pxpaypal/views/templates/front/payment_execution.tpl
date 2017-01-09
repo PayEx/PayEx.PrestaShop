@@ -1,5 +1,13 @@
+{*
+* AAIT
+*
+*  @author    aait.se
+*  @package   PayEx
+*  @copyright Copyright (C) AAIT - All rights reserved.
+*  @license   http://shop.aait.se/license.txt  EULA
+*}
 {capture name=path}{l s='PayPal via PayEx' mod='pxpaypal'}{/capture}
-{include file="$tpl_dir./breadcrumb.tpl"}
+{* include file="$tpl_dir./breadcrumb.tpl" *}
 
 <h2>{l s='Order summary' mod='pxpaypal'}</h2>
 
@@ -11,9 +19,9 @@
 {else}
 
     <h3>{l s='PayPal via PayEx' mod='pxpaypal'}</h3>
-    <form action="{$link->getModuleLink('pxpaypal', 'confirm', [], true)|escape:'html'}" method="post">
+    <form action="{$link->getModuleLink('pxpaypal', 'confirm', [], true)|escape:'htmlall':'UTF-8'}" method="post">
         <p>
-            <img src="{$this_path_px}logo.gif" alt="{l s='PayEx' mod='pxpaypal'}" width="86" height="49" style="float:left; margin: 0px 10px 5px 0px;" />
+            <img src="{$this_path_px|escape:'htmlall':'UTF-8'}logo.gif" alt="{l s='PayEx' mod='pxpaypal'}" width="86" height="49" style="float:left; margin: 0px 10px 5px 0px;" />
             {l s='You have chosen to pay by PayPal via PayEx.' mod='pxpaypal'}
             <br/><br />
             {l s='Here is a short summary of your order:' mod='pxpaypal'}
@@ -33,12 +41,12 @@
                 {l s='Choose one of the following:' mod='pxpaypal'}
                 <select id="currency_payement" name="currency_payement" onchange="setCurrency($('#currency_payement').val());">
                     {foreach from=$currencies item=currency}
-                        <option value="{$currency.id_currency}" {if $currency.id_currency == $cust_currency}selected="selected"{/if}>{$currency.name}</option>
+                        <option value="{$currency.id_currency|escape:'htmlall':'UTF-8'}" {if $currency.id_currency == $cust_currency}selected="selected"{/if}>{$currency.name|escape:'htmlall':'UTF-8'}</option>
                     {/foreach}
                 </select>
             {else}
-                {l s='We allow the following currency to be sent via PayEx:' mod='pxpaypal'}&nbsp;<b>{$currencies.0.name}</b>
-                <input type="hidden" name="currency_payement" value="{$currencies.0.id_currency}" />
+                {l s='We allow the following currency to be sent via PayEx:' mod='pxpaypal'}&nbsp;<b>{$currencies.0.name|escape:'htmlall':'UTF-8'}</b>
+                <input type="hidden" name="currency_payement" value="{$currencies.0.id_currency|escape:'htmlall':'UTF-8'}" />
             {/if}
         </p>
         <p>
@@ -48,7 +56,7 @@
         </p>
         <p class="cart_navigation" id="cart_navigation">
             <input type="submit" value="{l s='Place my order' mod='pxpaypal'}" class="exclusive_large" />
-            <a href="{$link->getPageLink('order', true, NULL, "step=3")|escape:'html'}" class="button_large">{l s='Other payment methods' mod='pxpaypal'}</a>
+            <a href="{$link->getPageLink('order', true, NULL, "step=3")|escape:'htmlall':'UTF-8'}" class="button_large">{l s='Other payment methods' mod='pxpaypal'}</a>
         </p>
     </form>
 {/if}
