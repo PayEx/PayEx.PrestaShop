@@ -193,7 +193,8 @@ class Ssn extends Module
                 require_once _PS_ROOT_DIR_ . '/vendor/payex/php-api/src/PayEx/Px.php';
             }
 
-            $this->_px = new \PayEx\Px();
+ 			$class = '\PayEx\Px';
+            $this->_px = new $class();
 
             $this->_px->setUserAgent(sprintf("PayEx.Ecommerce.Php/%s PHP/%s Prestahop/%s PayEx.Prestahop/%s",
                 \PayEx\Px::VERSION,

@@ -58,11 +58,11 @@ class Pxswish extends PaymentModule
 
         // Some checks...
         if (empty($this->accountnumber) || empty($this->encryptionkey)) {
-            $this->warning[] = $this->l('PayEx Account number and encryption key must be configured before using this module.');
+            $this->warning = $this->l('PayEx Account number and encryption key must be configured before using this module.');
         }
 
         if (!count(Currency::checkPaymentCurrencies($this->id))) {
-            $this->warning[] = $this->l('No currency has been set for this module.');
+            $this->warning = $this->l('No currency has been set for this module.');
         }
     }
 
@@ -365,7 +365,8 @@ class Pxswish extends PaymentModule
                 require_once _PS_ROOT_DIR_ . '/vendor/payex/php-api/src/PayEx/Px.php';
             }
 
-            $this->_px = new \PayEx\Px();
+ 			$class = '\PayEx\Px';
+            $this->_px = new $class();
 
             $this->_px->setUserAgent(sprintf("PayEx.Ecommerce.Php/%s PHP/%s Prestahop/%s PayEx.Prestahop/%s",
                 \PayEx\Px::VERSION,
