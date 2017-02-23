@@ -966,6 +966,21 @@ class Factoring extends PaymentModule
             $OrderLines->appendChild($OrderLine);
         }
 
+	    // Add Discount Line
+	    if ((float)$order->total_discounts_tax_incl > 0) {
+		    $taxAmount = $order->total_discounts_tax_incl - $order->total_discounts_tax_excl;
+		    $taxPercent = ($taxAmount > 0) ? round(100 / ($order->total_discounts_tax_excl / $taxAmount)) : 0;
+
+		    $OrderLine = $dom->createElement('OrderLine');
+		    $OrderLine->appendChild($dom->createElement('Product', $this->l('Discount')));
+		    $OrderLine->appendChild($dom->createElement('Qty', 1));
+		    $OrderLine->appendChild($dom->createElement('UnitPrice', -1 * $order->total_discounts_tax_excl));
+		    $OrderLine->appendChild($dom->createElement('VatRate', $taxPercent));
+		    $OrderLine->appendChild($dom->createElement('VatAmount', -1 * $taxAmount));
+		    $OrderLine->appendChild($dom->createElement('Amount', -1 * $order->total_discounts_tax_incl));
+		    $OrderLines->appendChild($OrderLine);
+	    }
+
         // Add Shipping Line
         if ((float)$order->total_shipping_tax_incl > 0) {
             $carrier = new Carrier((int)$order->id_carrier);
