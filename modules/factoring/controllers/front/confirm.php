@@ -65,33 +65,6 @@ class FactoringConfirmModuleFrontController extends ModuleFrontController
 
         $billing_address = new Address((int)$cart->id_address_invoice);
         $shipping_address = new Address((int)$cart->id_address_delivery);
-
-        $country_code = (string) Country::getIsoById($billing_address->id_country);
-        $postcode = str_replace(' ', '', $billing_address->postcode);
-
-        // Call PxOrder.GetAddressByPaymentMethod
-        $params = array(
-            'accountNumber' => '',
-            'paymentMethod' => $country_code === 'SE' ? 'PXFINANCINGINVOICESE' : 'PXFINANCINGINVOICENO',
-            'ssn' => $ssn,
-            'zipcode' => $postcode,
-            'countryCode' => $country_code,
-            'ipAddress' => Tools::getRemoteAddr()
-        );
-        $this->module->getPx()->setEnvironment($this->module->accountnumber, $this->module->encryptionkey, (bool)$this->module->mode);
-        $legal = $this->module->getPx()->GetAddressByPaymentMethod($params);
-        if ($legal['code'] !== 'OK' || $legal['description'] !== 'OK' || $legal['errorCode'] !== 'OK') {
-            if (preg_match('/\bInvalid parameter:SocialSecurityNumber\b/i', $legal['description'])) {
-                Tools::redirect(Context::getContext()->link->getModuleLink('factoring', 'payment', array(
-                    'error' => $this->module->l('Invalid Social Security Number')
-                )));
-            }
-
-            Tools::redirect(Context::getContext()->link->getModuleLink('factoring', 'payment', array(
-                'error' => $this->module->getVerboseErrorMessage($legal)
-            )));
-        }
-
         $currency = Currency::getCurrency($cart->id_currency);
 
         $this->module->validateOrder((int)$this->context->cart->id, Configuration::get('PS_OS_PAYEX_OPEN'), 0, $this->module->displayName, null, array(), null, true, $customer->secure_key);
